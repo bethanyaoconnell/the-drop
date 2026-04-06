@@ -51,8 +51,8 @@ export async function getSpotifyUser(accessToken: string): Promise<{ id: string;
     headers: { Authorization: `Bearer ${accessToken}` },
   })
 
-  if (!res.ok) throw new Error("Failed to fetch Spotify user")
   const data = await res.json()
+  if (!res.ok) throw new Error(`User fetch error ${res.status}: ${JSON.stringify(data)}`)
   return { id: data.id, displayName: data.display_name }
 }
 
@@ -75,8 +75,8 @@ export async function createPlaylist(
     }),
   })
 
-  if (!res.ok) throw new Error("Failed to create playlist")
   const data = await res.json()
+  if (!res.ok) throw new Error(`Playlist error ${res.status}: ${JSON.stringify(data)}`)
   return data.id
 }
 
