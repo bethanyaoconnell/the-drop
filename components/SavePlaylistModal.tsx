@@ -27,8 +27,8 @@ export default function SavePlaylistModal({ totalTracks, templateName, onSave, o
       } else {
         setError("Something went wrong. Please try again.")
       }
-    } catch {
-      setError("Failed to save playlist.")
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Failed to save playlist.")
     } finally {
       setSaving(false)
     }

@@ -33,7 +33,8 @@ export async function POST(req: NextRequest) {
       url: `https://open.spotify.com/playlist/${playlistId}`,
     })
   } catch (err) {
-    console.error("Playlist creation error:", err)
-    return NextResponse.json({ error: "Failed to create playlist" }, { status: 500 })
+    const message = err instanceof Error ? err.message : "Unknown error"
+    console.error("Playlist creation error:", message)
+    return NextResponse.json({ error: message }, { status: 500 })
   }
 }

@@ -89,10 +89,10 @@ export default function ClassBuilderPage() {
         body: JSON.stringify({ name, description, trackUris }),
       })
       const data = await res.json()
-      if (!res.ok) return null
+      if (!res.ok) throw new Error(data.error || "Save failed")
       return { url: data.url }
-    } catch {
-      return null
+    } catch (err) {
+      throw err
     }
   }
 
