@@ -2,17 +2,10 @@
 
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect } from "react"
 
 export default function LandingPage() {
-  const { data: session, status } = useSession()
+  const { status } = useSession()
   const router = useRouter()
-
-  useEffect(() => {
-    if (status === "authenticated") {
-      router.push("/classes/new")
-    }
-  }, [status, router])
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: "#0A0A0A" }}>
@@ -65,13 +58,16 @@ export default function LandingPage() {
 
       {/* CTA */}
       <button
-        onClick={() => signIn("spotify", { callbackUrl: "/classes/new" })}
-        disabled={status === "authenticated"}
+        onClick={() =>
+          status === "authenticated"
+            ? router.push("/classes/new")
+            : signIn("spotify", { callbackUrl: "/classes/new" })
+        }
         className="flex items-center gap-3 px-8 py-4 rounded-full text-base font-semibold transition-opacity hover:opacity-90 active:scale-95"
         style={{ background: "#FF6B00", color: "#FFFFFF" }}
       >
         <SpotifyIcon />
-        Connect with Spotify
+        {status === "authenticated" ? "Build my ride" : "Connect with Spotify"}
       </button>
 
       <p className="mt-6 text-sm" style={{ color: "#444444" }}>
