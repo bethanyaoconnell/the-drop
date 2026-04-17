@@ -1,14 +1,47 @@
 "use client"
 
-import { signIn, useSession } from "next-auth/react"
+import { signIn, signOut, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
+import { useState } from "react"
 
 export default function LandingPage() {
   const { status } = useSession()
   const router = useRouter()
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
-    <main className="min-h-screen flex flex-col items-center justify-center px-6" style={{ background: "#0A0A0A" }}>
+    <main className="min-h-screen flex flex-col items-center justify-center px-6 relative" style={{ background: "#0A0A0A" }}>
+      {/* 3-dot menu — only when signed in */}
+      {status === "authenticated" && (
+        <div className="absolute top-4 right-4">
+          <button
+            onClick={() => setMenuOpen((o) => !o)}
+            className="w-10 h-10 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
+            style={{ background: "#1A1A1A", border: "1px solid #2A2A2A" }}
+            aria-label="Menu"
+          >
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="#888888">
+              <circle cx="12" cy="5" r="2" />
+              <circle cx="12" cy="12" r="2" />
+              <circle cx="12" cy="19" r="2" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <div
+              className="absolute right-0 mt-2 rounded-xl overflow-hidden min-w-[140px]"
+              style={{ background: "#1A1A1A", border: "1px solid #2A2A2A" }}
+            >
+              <button
+                onClick={() => signOut({ callbackUrl: "/" })}
+                className="w-full px-4 py-3 text-sm text-left text-white hover:opacity-80 transition-opacity"
+              >
+                Sign out
+              </button>
+            </div>
+          )}
+        </div>
+      )}
+
       {/* Logo / wordmark */}
       <div className="mb-16 text-center">
         <div className="flex items-center justify-center gap-3 mb-6">
