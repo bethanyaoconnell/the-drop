@@ -32,6 +32,13 @@ export default function LandingPage() {
               style={{ background: "#1A1A1A", border: "1px solid #2A2A2A" }}
             >
               <button
+                onClick={() => router.push("/my-rides")}
+                className="w-full px-4 py-3 text-sm text-left text-white hover:opacity-80 transition-opacity border-b"
+                style={{ borderColor: "#2A2A2A" }}
+              >
+                My Rides
+              </button>
+              <button
                 onClick={() => signOut({ callbackUrl: "/" })}
                 className="w-full px-4 py-3 text-sm text-left text-white hover:opacity-80 transition-opacity"
               >

@@ -78,23 +78,12 @@ export default function ClassBuilderPage() {
   const totalTracks = allTracks.length
   const totalDurationMs = allTracks.reduce((sum, t) => sum + t.durationMs, 0)
 
-  async function handleSavePlaylist(name: string) {
-    const trackUris = allTracks.map((t) => t.uri)
-    const description = `${template!.name} · Built with Spin`
-
-    try {
-      const res = await fetch("/api/playlists", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ name, description, trackUris }),
-      })
-      const data = await res.json()
-      if (!res.ok) throw new Error(data.error || "Save failed")
-      return { url: data.url }
-    } catch (err) {
-      throw err
-    }
-  }
+  const savedSegments = template.segments.map((seg) => ({
+    id: seg.id,
+    name: seg.name,
+    durationMin: seg.durationMin,
+    tracks: classTracks[seg.id] ?? [],
+  }))
 
   return (
     <main className="min-h-screen pb-32" style={{ background: "#0A0A0A" }}>
@@ -188,7 +177,7 @@ export default function ClassBuilderPage() {
               <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
                 <path d="M17 3H5c-1.11 0-2 .9-2 2v14c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V7l-4-4zm-5 16c-1.66 0-3-1.34-3-3s1.34-3 3-3 3 1.34 3 3-1.34 3-3 3zm3-10H5V5h10v4z" />
               </svg>
-              Save to Spotify
+              Save ride
             </button>
           </div>
         </div>
@@ -198,8 +187,10 @@ export default function ClassBuilderPage() {
       {showSaveModal && (
         <SavePlaylistModal
           totalTracks={totalTracks}
+          templateId={templateId}
           templateName={template.name}
-          onSave={handleSavePlaylist}
+          segments={savedSegments}
+          totalDurationMs={totalDurationMs}
           onClose={() => setShowSaveModal(false)}
         />
       )}
