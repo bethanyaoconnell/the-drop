@@ -4,6 +4,7 @@ import { useEffect, useState } from "react"
 import { useRouter } from "next/navigation"
 import { getPlaylists, deletePlaylist, SavedPlaylist } from "@/lib/localPlaylists"
 import { formatDuration } from "@/lib/spotify"
+import AccountMenu from "@/components/AccountMenu"
 
 export default function MyRidesPage() {
   const router = useRouter()
@@ -34,7 +35,8 @@ export default function MyRidesPage() {
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
           </svg>
         </button>
-        <h1 className="text-base font-bold text-white">My Rides</h1>
+        <h1 className="flex-1 text-base font-bold text-white">My Rides</h1>
+        <AccountMenu />
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6">

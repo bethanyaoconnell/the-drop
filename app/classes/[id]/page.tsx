@@ -8,6 +8,7 @@ import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import ClassTimeline from "@/components/ClassTimeline"
 import SegmentPanel from "@/components/SegmentPanel"
 import SavePlaylistModal from "@/components/SavePlaylistModal"
+import AccountMenu from "@/components/AccountMenu"
 
 export default function ClassBuilderPage() {
   const { status } = useSession()
@@ -118,6 +119,7 @@ export default function ClassBuilderPage() {
             Save
           </button>
         )}
+        <AccountMenu />
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-5">
