@@ -4,7 +4,6 @@ import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
 import { useEffect } from "react"
 import { CLASS_TEMPLATES } from "@/lib/templates"
-import AccountMenu from "@/components/AccountMenu"
 
 export default function NewClassPage() {
   const { status } = useSession()
@@ -25,16 +24,13 @@ export default function NewClassPage() {
       <div className="max-w-2xl mx-auto">
         {/* Header */}
         <div className="mb-10">
-          <div className="flex items-center justify-between mb-6">
-            <button
-              onClick={() => router.push("/")}
-              className="text-sm flex items-center gap-2 transition-opacity hover:opacity-70"
-              style={{ color: "#888888" }}
-            >
-              <span>←</span> Back
-            </button>
-            <AccountMenu />
-          </div>
+          <button
+            onClick={() => router.push("/")}
+            className="text-sm mb-6 flex items-center gap-2 transition-opacity hover:opacity-70"
+            style={{ color: "#888888" }}
+          >
+            <span>←</span> Back
+          </button>
           <p className="text-sm font-medium mb-2 uppercase tracking-widest" style={{ color: "#FF6B00" }}>
             New Class
           </p>

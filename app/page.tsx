@@ -2,7 +2,6 @@
 
 import { signIn, useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import AccountMenu from "@/components/AccountMenu"
 
 export default function LandingPage() {
   const { status } = useSession()
@@ -10,10 +9,6 @@ export default function LandingPage() {
 
   return (
     <main className="min-h-screen flex flex-col items-center justify-center px-6 relative" style={{ background: "#0A0A0A" }}>
-      {/* Account menu */}
-      <div className="absolute top-4 right-4">
-        <AccountMenu />
-      </div>
 
       {/* Logo / wordmark */}
       <div className="mb-16 text-center">

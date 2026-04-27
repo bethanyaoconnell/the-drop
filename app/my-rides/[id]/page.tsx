@@ -4,7 +4,6 @@ import { useEffect, useState } from "react"
 import { useRouter, useParams } from "next/navigation"
 import { getPlaylist, SavedPlaylist } from "@/lib/localPlaylists"
 import { formatDuration } from "@/lib/spotify"
-import AccountMenu from "@/components/AccountMenu"
 
 export default function SavedRidePage() {
   const router = useRouter()
@@ -75,7 +74,6 @@ export default function SavedRidePage() {
             {playlist.totalTracks} tracks · {formatDuration(playlist.totalDurationMs)}
           </p>
         </div>
-        <AccountMenu />
         <button
           onClick={copyTrackList}
           className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
