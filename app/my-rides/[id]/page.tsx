@@ -9,10 +9,28 @@ export default function SavedRidePage() {
   const router = useRouter()
   const { id } = useParams<{ id: string }>()
   const [playlist, setPlaylist] = useState<SavedPlaylist | null>(null)
+  const [queueState, setQueueState] = useState<"idle" | "loading" | "done" | "error">("idle")
 
   useEffect(() => {
     setPlaylist(getPlaylist(id))
   }, [id])
+
+  async function handleQueue() {
+    if (!playlist) return
+    const trackUris = playlist.segments.flatMap((seg) => seg.tracks.map((t) => t.uri))
+    if (trackUris.length === 0) return
+    setQueueState("loading")
+    try {
+      const res = await fetch("/api/queue", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ trackUris }),
+      })
+      setQueueState(res.ok ? "done" : "error")
+    } catch {
+      setQueueState("error")
+    }
+  }
 
   if (!playlist) {
     return (
@@ -58,10 +76,18 @@ export default function SavedRidePage() {
         </div>
         <button
           onClick={copyTrackList}
-          className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
-          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A" }}
+          className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
+          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#888888" }}
         >
           Copy list
+        </button>
+        <button
+          onClick={handleQueue}
+          disabled={queueState === "loading" || queueState === "done"}
+          className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+          style={{ background: "#1DB954" }}
+        >
+          {queueState === "loading" ? "Queuing…" : queueState === "done" ? "✓ Queued!" : queueState === "error" ? "Error — retry" : "Queue in Spotify"}
         </button>
       </div>
 
