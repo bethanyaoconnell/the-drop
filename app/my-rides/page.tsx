@@ -22,7 +22,7 @@ export default function MyRidesPage() {
   return (
     <main className="min-h-screen pb-16" style={{ background: "#0A0A0A" }}>
       <div
-        className="sticky top-0 z-10 px-4 py-3 flex items-center gap-4"
+        className="sticky top-0 z-10 pl-4 pr-16 py-3 flex items-center gap-4"
         style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1A1A1A" }}
       >
         <button
