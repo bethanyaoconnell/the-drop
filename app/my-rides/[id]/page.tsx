@@ -10,6 +10,7 @@ export default function SavedRidePage() {
   const { id } = useParams<{ id: string }>()
   const [playlist, setPlaylist] = useState<SavedPlaylist | null>(null)
   const [queueState, setQueueState] = useState<"idle" | "loading" | "done" | "error">("idle")
+  const [queueError, setQueueError] = useState<string | null>(null)
 
   useEffect(() => {
     setPlaylist(getPlaylist(id))
@@ -20,14 +21,23 @@ export default function SavedRidePage() {
     const trackUris = playlist.segments.flatMap((seg) => seg.tracks.map((t) => t.uri))
     if (trackUris.length === 0) return
     setQueueState("loading")
+    setQueueError(null)
     try {
       const res = await fetch("/api/queue", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ trackUris }),
       })
-      setQueueState(res.ok ? "done" : "error")
+      if (res.ok) {
+        setQueueState("done")
+      } else {
+        const data = await res.json().catch(() => ({}))
+        const msg = data?.details?.error?.message || data?.error || `Error ${res.status}`
+        setQueueError(msg)
+        setQueueState("error")
+      }
     } catch {
+      setQueueError("Network error")
       setQueueState("error")
     }
   }
@@ -74,7 +84,9 @@ export default function SavedRidePage() {
             {playlist.totalTracks} tracks · {formatDuration(playlist.totalDurationMs)}
           </p>
         </div>
-        <div className="flex items-center gap-3 shrink-0">
+        <div className="flex flex-col items-end gap-1 shrink-0">
+        {queueError && <p className="text-xs px-1" style={{ color: "#ff6b6b" }}>{queueError}</p>}
+        <div className="flex items-center gap-3">
           <button
             onClick={copyTrackList}
             className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90 box-border"
@@ -88,8 +100,9 @@ export default function SavedRidePage() {
             className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
             style={{ background: "#1DB954" }}
           >
-            {queueState === "loading" ? "Queuing…" : queueState === "done" ? "✓ Queued!" : queueState === "error" ? "Error — retry" : "Queue in Spotify"}
+            {queueState === "loading" ? "Queuing…" : queueState === "done" ? "✓ Queued!" : queueState === "error" ? "Retry" : "Queue in Spotify"}
           </button>
+        </div>
         </div>
       </div>
 
