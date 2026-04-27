@@ -74,21 +74,23 @@ export default function SavedRidePage() {
             {playlist.totalTracks} tracks · {formatDuration(playlist.totalDurationMs)}
           </p>
         </div>
-        <button
-          onClick={copyTrackList}
-          className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90"
-          style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#888888" }}
-        >
-          Copy list
-        </button>
-        <button
-          onClick={handleQueue}
-          disabled={queueState === "loading" || queueState === "done"}
-          className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
-          style={{ background: "#1DB954" }}
-        >
-          {queueState === "loading" ? "Queuing…" : queueState === "done" ? "✓ Queued!" : queueState === "error" ? "Error — retry" : "Queue in Spotify"}
-        </button>
+        <div className="flex items-center gap-3 shrink-0">
+          <button
+            onClick={copyTrackList}
+            className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90 box-border"
+            style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#888888" }}
+          >
+            Copy list
+          </button>
+          <button
+            onClick={handleQueue}
+            disabled={queueState === "loading" || queueState === "done"}
+            className="px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90 disabled:opacity-60"
+            style={{ background: "#1DB954" }}
+          >
+            {queueState === "loading" ? "Queuing…" : queueState === "done" ? "✓ Queued!" : queueState === "error" ? "Error — retry" : "Queue in Spotify"}
+          </button>
+        </div>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6 space-y-6">
