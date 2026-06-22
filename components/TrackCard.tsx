@@ -109,20 +109,16 @@ export default function TrackCard({
         </button>
       </div>
 
-      {/* Spotify embed fallback when no preview_url is available.
-          Spotify renders its own "Get Spotify" banner below the player controls
-          when no preview is available; clip the iframe to hide it. */}
+      {/* Spotify embed fallback when no preview_url is available */}
       {showEmbed && !track.previewUrl && (
-        <div style={{ height: 80, overflow: "hidden" }}>
-          <iframe
-            src={`https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`}
-            width="100%"
-            height="152"
-            style={{ border: "none", display: "block" }}
-            allow="encrypted-media"
-            loading="lazy"
-          />
-        </div>
+        <iframe
+          src={`https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`}
+          width="100%"
+          height="80"
+          style={{ border: "none" }}
+          allow="encrypted-media"
+          loading="lazy"
+        />
       )}
     </div>
   )
