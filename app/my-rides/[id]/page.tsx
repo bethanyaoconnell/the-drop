@@ -11,6 +11,7 @@ export default function SavedRidePage() {
   const [playlist, setPlaylist] = useState<SavedPlaylist | null>(null)
   const [queueState, setQueueState] = useState<"idle" | "loading" | "done" | "error">("idle")
   const [queueError, setQueueError] = useState<string | null>(null)
+  const [copyState, setCopyState] = useState<"idle" | "copied" | "error">("idle")
 
   useEffect(() => {
     setPlaylist(getPlaylist(id))
@@ -59,8 +60,28 @@ export default function SavedRidePage() {
     seg.tracks.map((t) => `${t.name} — ${t.artists.join(", ")}`)
   )
 
-  function copyTrackList() {
-    navigator.clipboard.writeText(allTrackLines.join("\n"))
+  async function copyTrackList() {
+    const text = allTrackLines.join("\n")
+    try {
+      await navigator.clipboard.writeText(text)
+      setCopyState("copied")
+    } catch {
+      try {
+        const textarea = document.createElement("textarea")
+        textarea.value = text
+        textarea.style.position = "fixed"
+        textarea.style.opacity = "0"
+        document.body.appendChild(textarea)
+        textarea.focus()
+        textarea.select()
+        document.execCommand("copy")
+        document.body.removeChild(textarea)
+        setCopyState("copied")
+      } catch {
+        setCopyState("error")
+      }
+    }
+    setTimeout(() => setCopyState("idle"), 2500)
   }
 
   return (
@@ -90,9 +111,13 @@ export default function SavedRidePage() {
           <button
             onClick={copyTrackList}
             className="px-4 py-2 rounded-full text-sm font-semibold transition-opacity hover:opacity-90 box-border"
-            style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", color: "#888888" }}
+            style={{
+              background: "#1A1A1A",
+              border: `1px solid ${copyState === "error" ? "#ff6b6b" : "#2A2A2A"}`,
+              color: copyState === "copied" ? "#FF6B00" : copyState === "error" ? "#ff6b6b" : "#888888",
+            }}
           >
-            Copy list
+            {copyState === "copied" ? "Copied!" : copyState === "error" ? "Couldn't copy" : "Copy list"}
           </button>
           <button
             onClick={handleQueue}
