@@ -33,7 +33,10 @@ export default function SavedRidePage() {
         setQueueState("done")
       } else {
         const data = await res.json().catch(() => ({}))
-        const msg = data?.details?.error?.message || data?.error || `Error ${res.status}`
+        const rawMsg = data?.details?.error?.message || data?.error || `Error ${res.status}`
+        const msg = /no active device/i.test(rawMsg)
+          ? "Open Spotify and press play on any song first, then try again"
+          : rawMsg
         setQueueError(msg)
         setQueueState("error")
       }
