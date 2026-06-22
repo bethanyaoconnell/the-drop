@@ -85,6 +85,33 @@ export default function NewClassPage() {
               </div>
             </button>
           ))}
+
+          {/* Build my own structure */}
+          <button
+            onClick={() => router.push("/classes/custom/setup")}
+            className="w-full text-left p-6 rounded-2xl transition-all hover:scale-[1.01] active:scale-[0.99]"
+            style={{
+              background: "#1A1A1A",
+              border: "1px dashed #FF6B0055",
+            }}
+          >
+            <div className="flex items-center justify-between">
+              <div>
+                <h2 className="text-xl font-bold text-white mb-1">Build my own structure</h2>
+                <p className="text-sm" style={{ color: "#888888" }}>
+                  Define your own sections and durations from scratch.
+                </p>
+              </div>
+              <span
+                className="w-9 h-9 rounded-full flex items-center justify-center shrink-0"
+                style={{ background: "#FF6B0022", color: "#FF6B00" }}
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" />
+                </svg>
+              </span>
+            </div>
+          </button>
         </div>
       </div>
     </main>

@@ -1,4 +1,4 @@
-export type SegmentType = "warmup" | "build" | "intervals" | "peak" | "climb" | "cooldown"
+export type SegmentType = "warmup" | "build" | "intervals" | "peak" | "climb" | "cooldown" | "custom"
 
 export type Segment = {
   id: string
@@ -27,6 +27,7 @@ const SEGMENT_COLORS: Record<SegmentType, string> = {
   peak:      "#FF3B30",
   climb:     "#FF6B00",
   cooldown:  "#555555",
+  custom:    "#FF6B00",
 }
 
 const SEGMENT_SEARCH_QUERIES: Record<SegmentType, string[]> = {
@@ -36,6 +37,7 @@ const SEGMENT_SEARCH_QUERIES: Record<SegmentType, string[]> = {
   peak:      ["peak cardio intensity", "cycling race music EDM", "maximum effort workout"],
   climb:     ["steady climb cycling music", "power endurance workout", "hill climb motivation"],
   cooldown:  ["workout cooldown music", "post workout relax", "cool down stretch"],
+  custom:    [],
 }
 
 function seg(

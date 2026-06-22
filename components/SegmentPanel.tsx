@@ -2,7 +2,7 @@
 
 import { useEffect, useState } from "react"
 import { Segment } from "@/lib/templates"
-import { SpotifyTrack } from "@/lib/spotify"
+import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import TrackCard from "./TrackCard"
 
 type Props = {
@@ -10,6 +10,9 @@ type Props = {
   addedTracks: SpotifyTrack[]
   activePreviewId: string | null
   topArtists: { id: string; name: string }[]
+  expandable?: boolean
+  showBpm?: boolean
+  showProgress?: boolean
   onPreviewPlay: (trackId: string) => void
   onAddTrack: (track: SpotifyTrack) => void
   onRemoveTrack: (trackId: string) => void
@@ -20,10 +23,14 @@ export default function SegmentPanel({
   addedTracks,
   activePreviewId,
   topArtists,
+  expandable = false,
+  showBpm = true,
+  showProgress = false,
   onPreviewPlay,
   onAddTrack,
   onRemoveTrack,
 }: Props) {
+  const [expanded, setExpanded] = useState(!expandable || addedTracks.length > 0)
   const [recommendations, setRecommendations] = useState<SpotifyTrack[]>([])
   const [loading, setLoading] = useState(false)
   const [loaded, setLoaded] = useState(false)
@@ -94,43 +101,89 @@ export default function SegmentPanel({
       style={{ border: "1px solid #2A2A2A" }}
     >
       {/* Segment header */}
-      <div
-        className="px-5 py-4 flex items-center gap-3"
-        style={{ borderLeft: `3px solid ${segment.color}`, background: "#1A1A1A" }}
-      >
-        <div className="flex-1">
-          <div className="flex items-center gap-3">
-            <h2 className="text-lg font-bold text-white">{segment.name}</h2>
-            <span
-              className="text-xs px-2 py-0.5 rounded-full font-medium tabular-nums"
-              style={{ background: "#FF6B0022", color: "#FF6B00" }}
-            >
-              {segment.durationMin} min
-            </span>
-          </div>
-          <p className="text-xs mt-0.5" style={{ color: "#888888" }}>
-            {segment.bpmMin}–{segment.bpmMax} BPM target
-          </p>
-        </div>
+      {(() => {
+        const usedMs = addedTracks.reduce((s, t) => s + t.durationMs, 0)
+        const usedMin = usedMs / 60000
+        const targetMin = segment.durationMin
+        const remainingMin = targetMin - usedMin
+        const isOver = usedMin > targetMin
+        const pct = Math.min(100, (usedMin / targetMin) * 100)
 
-        {/* Energy bar */}
-        <div className="flex flex-col items-end gap-1">
-          <span className="text-xs" style={{ color: "#444444" }}>energy</span>
+        return (
           <div
-            className="w-16 h-1.5 rounded-full overflow-hidden"
-            style={{ background: "#242424" }}
+            className="px-5 py-4 flex items-center gap-3"
+            style={{
+              borderLeft: `3px solid ${segment.color}`,
+              background: "#1A1A1A",
+              cursor: expandable ? "pointer" : "default",
+            }}
+            onClick={() => expandable && setExpanded((e) => !e)}
           >
-            <div
-              className="h-full rounded-full"
-              style={{
-                width: `${segment.energy * 100}%`,
-                background: segment.color,
-              }}
-            />
-          </div>
-        </div>
-      </div>
+            {expandable && (
+              <svg
+                width="12" height="12" viewBox="0 0 24 24" fill="#666666"
+                className="shrink-0 transition-transform"
+                style={{ transform: expanded ? "rotate(90deg)" : "rotate(0deg)" }}
+              >
+                <path d="M9 6l6 6-6 6V6z" />
+              </svg>
+            )}
+            <div className="flex-1">
+              <div className="flex items-center gap-3">
+                <h2 className="text-lg font-bold text-white">{segment.name}</h2>
+                <span
+                  className="text-xs px-2 py-0.5 rounded-full font-medium tabular-nums"
+                  style={{ background: "#FF6B0022", color: "#FF6B00" }}
+                >
+                  {segment.durationMin} min
+                </span>
+                {expandable && addedTracks.length === 0 && (
+                  <span className="text-xs" style={{ color: "#555555" }}>No songs yet</span>
+                )}
+              </div>
+              {showBpm && (
+                <p className="text-xs mt-0.5" style={{ color: "#888888" }}>
+                  {segment.bpmMin}–{segment.bpmMax} BPM target
+                </p>
+              )}
+            </div>
 
+            {showProgress ? (
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <span className="text-xs tabular-nums" style={{ color: isOver ? "#ff9f43" : "#444444" }}>
+                  {isOver
+                    ? `${formatDuration(usedMs)} · over by ${remainingMin.toFixed(1).replace("-", "")}m`
+                    : `${formatDuration(usedMs)} · ${remainingMin.toFixed(1)}m left`}
+                </span>
+                <div className="w-20 h-1.5 rounded-full overflow-hidden" style={{ background: "#242424" }}>
+                  <div
+                    className="h-full rounded-full"
+                    style={{ width: `${pct}%`, background: isOver ? "#ff9f43" : segment.color }}
+                  />
+                </div>
+              </div>
+            ) : (
+              <div className="flex flex-col items-end gap-1 shrink-0">
+                <span className="text-xs" style={{ color: "#444444" }}>energy</span>
+                <div
+                  className="w-16 h-1.5 rounded-full overflow-hidden"
+                  style={{ background: "#242424" }}
+                >
+                  <div
+                    className="h-full rounded-full"
+                    style={{
+                      width: `${segment.energy * 100}%`,
+                      background: segment.color,
+                    }}
+                  />
+                </div>
+              </div>
+            )}
+          </div>
+        )
+      })()}
+
+      {expanded && (
       <div className="p-4" style={{ background: "#111111" }}>
         {/* Search bar */}
         <div className="relative mb-4">
@@ -286,6 +339,7 @@ export default function SegmentPanel({
           </div>
         )}
       </div>
+      )}
     </div>
   )
 }
