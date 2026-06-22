@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Segment } from "@/lib/templates"
 import { SpotifyTrack } from "@/lib/spotify"
 import TrackCard from "./TrackCard"
@@ -29,7 +29,39 @@ export default function SegmentPanel({
   const [loaded, setLoaded] = useState(false)
   const [queryIndex, setQueryIndex] = useState(0)
 
+  const [searchQuery, setSearchQuery] = useState("")
+  const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([])
+  const [searching, setSearching] = useState(false)
+
   const addedIds = new Set(addedTracks.map((t) => t.id))
+
+  useEffect(() => {
+    const trimmed = searchQuery.trim()
+    if (!trimmed) {
+      setSearchResults([])
+      setSearching(false)
+      return
+    }
+    setSearching(true)
+    const timeout = setTimeout(async () => {
+      try {
+        const res = await fetch(`/api/recommendations?query=${encodeURIComponent(trimmed)}`)
+        const data = await res.json()
+        setSearchResults(data.tracks ?? [])
+      } catch {
+        setSearchResults([])
+      } finally {
+        setSearching(false)
+      }
+    }, 400)
+    return () => clearTimeout(timeout)
+  }, [searchQuery])
+
+  function handleAddFromSearch(track: SpotifyTrack) {
+    onAddTrack(track)
+    setSearchQuery("")
+    setSearchResults([])
+  }
 
   async function fetchRecommendations(qIdx = queryIndex) {
     setLoading(true)
@@ -100,6 +132,68 @@ export default function SegmentPanel({
       </div>
 
       <div className="p-4" style={{ background: "#111111" }}>
+        {/* Search bar */}
+        <div className="relative mb-4">
+          <div
+            className="flex items-center gap-2 px-3 py-2.5 rounded-xl"
+            style={{ background: "#1A1A1A", border: "1px solid #2A2A2A" }}
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#666666" className="shrink-0">
+              <path d="M15.5 14h-.79l-.28-.27C15.41 12.59 16 11.11 16 9.5 16 5.91 13.09 3 9.5 3S3 5.91 3 9.5 5.91 16 9.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+            </svg>
+            <input
+              type="text"
+              value={searchQuery}
+              onChange={(e) => setSearchQuery(e.target.value)}
+              placeholder="Search for a song…"
+              className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-[#666666]"
+            />
+            {searchQuery && (
+              <button
+                onClick={() => { setSearchQuery(""); setSearchResults([]) }}
+                className="shrink-0 transition-opacity hover:opacity-70"
+                style={{ color: "#666666" }}
+                aria-label="Clear search"
+              >
+                <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
+                  <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />
+                </svg>
+              </button>
+            )}
+          </div>
+
+          {searchQuery.trim() && (
+            <div className="mt-3">
+              {searching ? (
+                <div className="flex justify-center py-3">
+                  <span
+                    className="w-4 h-4 rounded-full border-2 border-t-transparent animate-spin"
+                    style={{ borderColor: "#FF6B00", borderTopColor: "transparent" }}
+                  />
+                </div>
+              ) : searchResults.length > 0 ? (
+                <div className="flex flex-col gap-2">
+                  {searchResults.map((track) => (
+                    <TrackCard
+                      key={track.id}
+                      track={track}
+                      isAdded={addedIds.has(track.id)}
+                      activePreviewId={activePreviewId}
+                      onPreviewPlay={onPreviewPlay}
+                      onAdd={handleAddFromSearch}
+                      onRemove={onRemoveTrack}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <p className="text-xs text-center py-3" style={{ color: "#555555" }}>
+                  No results for &quot;{searchQuery.trim()}&quot;
+                </p>
+              )}
+            </div>
+          )}
+        </div>
+
         {/* Added tracks */}
         {addedTracks.length > 0 && (
           <div className="mb-4">
