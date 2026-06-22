@@ -1,0 +1,113 @@
+"use client"
+
+import { useEffect, useRef, useState } from "react"
+import { getSpotifyIframeApi, SpotifyEmbedController } from "@/lib/spotifyEmbedApi"
+
+type Props = {
+  trackId: string
+  activeTrackId: string | null
+  onPlay: (trackId: string) => void
+}
+
+export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Props) {
+  const containerRef = useRef<HTMLDivElement>(null)
+  const controllerRef = useRef<SpotifyEmbedController | null>(null)
+  const [connecting, setConnecting] = useState(false)
+  const [error, setError] = useState(false)
+  const isPlaying = activeTrackId === trackId
+
+  useEffect(() => {
+    return () => {
+      controllerRef.current?.destroy()
+    }
+  }, [])
+
+  useEffect(() => {
+    if (!isPlaying) {
+      controllerRef.current?.pause()
+    }
+  }, [isPlaying])
+
+  function ensureController(): Promise<SpotifyEmbedController> {
+    if (controllerRef.current) return Promise.resolve(controllerRef.current)
+    return new Promise((resolve, reject) => {
+      if (!containerRef.current) return reject(new Error("no container"))
+      getSpotifyIframeApi()
+        .then((IFrameAPI) => {
+          IFrameAPI.createController(
+            containerRef.current!,
+            { uri: `spotify:track:${trackId}`, width: 1, height: 1 },
+            (controller) => {
+              controller.addListener("playback_update", (e) => {
+                if (e.data.isPaused && e.data.position === 0 && activeTrackId === trackId) {
+                  onPlay("")
+                }
+              })
+              controllerRef.current = controller
+              resolve(controller)
+            }
+          )
+        })
+        .catch(reject)
+    })
+  }
+
+  async function handleClick() {
+    if (isPlaying) {
+      controllerRef.current?.pause()
+      onPlay("")
+      return
+    }
+    setConnecting(true)
+    setError(false)
+    try {
+      const controller = await ensureController()
+      controller.resume()
+      onPlay(trackId)
+    } catch {
+      setError(true)
+    } finally {
+      setConnecting(false)
+    }
+  }
+
+  return (
+    <>
+      <div
+        ref={containerRef}
+        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" }}
+        aria-hidden
+      />
+      <button
+        onClick={(e) => {
+          e.stopPropagation()
+          handleClick()
+        }}
+        disabled={connecting}
+        className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80"
+        style={{ background: error ? "#ff6b6b" : "#1DB954" }}
+        title={error ? "Preview failed" : isPlaying ? "Stop preview" : "Preview"}
+      >
+        {connecting ? (
+          <span
+            className="w-3 h-3 rounded-full border-2 border-t-transparent animate-spin"
+            style={{ borderColor: "white", borderTopColor: "transparent" }}
+          />
+        ) : error ? (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+            <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+          </svg>
+        ) : isPlaying ? (
+          <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+            <rect x="6" y="4" width="4" height="16" />
+            <rect x="14" y="4" width="4" height="16" />
+          </svg>
+        ) : (
+          <svg width="10" height="12" viewBox="0 0 10 12" fill="white">
+            <path d="M0 0l10 6-10 6z" />
+          </svg>
+        )}
+      </button>
+    </>
+  )
+}
