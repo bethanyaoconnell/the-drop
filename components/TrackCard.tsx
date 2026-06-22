@@ -81,7 +81,7 @@ export default function TrackCard({
             title="Preview on Spotify"
           >
             <svg width="12" height="12" viewBox="0 0 24 24" fill={showEmbed ? "white" : "#888888"}>
-              <path d="M8 5v14l11-7z" />
+              <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
             </svg>
           </button>
         )}
