@@ -9,6 +9,7 @@ type Props = {
   segment: Segment
   addedTracks: SpotifyTrack[]
   activePreviewId: string | null
+  topArtists: { id: string; name: string }[]
   onPreviewPlay: (trackId: string) => void
   onAddTrack: (track: SpotifyTrack) => void
   onRemoveTrack: (trackId: string) => void
@@ -18,6 +19,7 @@ export default function SegmentPanel({
   segment,
   addedTracks,
   activePreviewId,
+  topArtists,
   onPreviewPlay,
   onAddTrack,
   onRemoveTrack,
@@ -33,9 +35,11 @@ export default function SegmentPanel({
     setLoading(true)
     try {
       const query = segment.searchQueries[qIdx % segment.searchQueries.length]
-      const res = await fetch(
-        `/api/recommendations?query=${encodeURIComponent(query)}`
-      )
+      const params = new URLSearchParams({ query })
+      if (topArtists.length > 0) {
+        params.set("artist", topArtists[qIdx % topArtists.length].name)
+      }
+      const res = await fetch(`/api/recommendations?${params}`)
       const data = await res.json()
       setRecommendations(data.tracks ?? [])
       setLoaded(true)

@@ -22,6 +22,14 @@ export default function ClassBuilderPage() {
   const [activeSegmentId, setActiveSegmentId] = useState<string>("")
   const [activePreviewId, setActivePreviewId] = useState<string | null>(null)
   const [showSaveModal, setShowSaveModal] = useState(false)
+  const [topArtists, setTopArtists] = useState<{ id: string; name: string }[]>([])
+
+  useEffect(() => {
+    fetch("/api/top-artists")
+      .then((res) => res.json())
+      .then((data) => setTopArtists(data.artists ?? []))
+      .catch(() => setTopArtists([]))
+  }, [])
 
   // Refs for scrolling to segment panels
   const segmentRefs = useRef<Record<string, HTMLDivElement | null>>({})
@@ -140,6 +148,7 @@ export default function ClassBuilderPage() {
               segment={seg}
               addedTracks={classTracks[seg.id] ?? []}
               activePreviewId={activePreviewId}
+              topArtists={topArtists}
               onPreviewPlay={setActivePreviewId}
               onAddTrack={(track) => handleAddTrack(seg.id, track)}
               onRemoveTrack={(trackId) => handleRemoveTrack(seg.id, trackId)}

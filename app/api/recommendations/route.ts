@@ -9,11 +9,26 @@ export async function GET(req: NextRequest) {
   }
 
   const query = req.nextUrl.searchParams.get("query")
+  const artist = req.nextUrl.searchParams.get("artist")
   if (!query) {
     return NextResponse.json({ error: "query param required" }, { status: 400 })
   }
 
   try {
+    if (artist) {
+      const [generic, byArtist] = await Promise.all([
+        searchTracks(query, session.accessToken, 6),
+        searchTracks(`artist:"${artist}" ${query}`, session.accessToken, 4),
+      ])
+      const seen = new Set<string>()
+      const tracks = [...byArtist, ...generic].filter((t) => {
+        if (seen.has(t.id)) return false
+        seen.add(t.id)
+        return true
+      })
+      return NextResponse.json({ tracks: tracks.slice(0, 10) })
+    }
+
     const tracks = await searchTracks(query, session.accessToken, 10)
     return NextResponse.json({ tracks })
   } catch (err) {

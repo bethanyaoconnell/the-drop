@@ -46,6 +46,19 @@ export async function searchTracks(
   return (data.tracks?.items ?? []).map(formatTrack)
 }
 
+export async function getTopArtists(
+  accessToken: string,
+  limit = 10
+): Promise<{ id: string; name: string }[]> {
+  const res = await fetch(
+    `https://api.spotify.com/v1/me/top/artists?time_range=medium_term&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.items ?? []).map((a: { id: string; name: string }) => ({ id: a.id, name: a.name }))
+}
+
 export async function getSpotifyUser(accessToken: string): Promise<{ id: string; displayName: string }> {
   const res = await fetch("https://api.spotify.com/v1/me", {
     headers: { Authorization: `Bearer ${accessToken}` },
