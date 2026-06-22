@@ -23,12 +23,18 @@ export default function ClassBuilderPage() {
   const [activePreviewId, setActivePreviewId] = useState<string | null>(null)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [topArtists, setTopArtists] = useState<{ id: string; name: string }[]>([])
+  const [topTracks, setTopTracks] = useState<SpotifyTrack[]>([])
 
   useEffect(() => {
     fetch("/api/top-artists")
       .then((res) => res.json())
       .then((data) => setTopArtists(data.artists ?? []))
       .catch(() => setTopArtists([]))
+
+    fetch("/api/top-tracks")
+      .then((res) => res.json())
+      .then((data) => setTopTracks(data.tracks ?? []))
+      .catch(() => setTopTracks([]))
   }, [])
 
   // Refs for scrolling to segment panels
@@ -138,7 +144,7 @@ export default function ClassBuilderPage() {
         />
 
         {/* Segment panels */}
-        {template.segments.map((seg) => (
+        {template.segments.map((seg, i) => (
           <div
             key={seg.id}
             ref={(el) => { segmentRefs.current[seg.id] = el }}
@@ -149,6 +155,7 @@ export default function ClassBuilderPage() {
               addedTracks={classTracks[seg.id] ?? []}
               activePreviewId={activePreviewId}
               topArtists={topArtists}
+              yourTopTracks={topTracks.filter((_, idx) => idx % template.segments.length === i)}
               onPreviewPlay={setActivePreviewId}
               onAddTrack={(track) => handleAddTrack(seg.id, track)}
               onRemoveTrack={(trackId) => handleRemoveTrack(seg.id, trackId)}

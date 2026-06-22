@@ -10,6 +10,7 @@ type Props = {
   addedTracks: SpotifyTrack[]
   activePreviewId: string | null
   topArtists: { id: string; name: string }[]
+  yourTopTracks?: SpotifyTrack[]
   expandable?: boolean
   showBpm?: boolean
   showProgress?: boolean
@@ -23,6 +24,7 @@ export default function SegmentPanel({
   addedTracks,
   activePreviewId,
   topArtists,
+  yourTopTracks = [],
   expandable = false,
   showBpm = true,
   showProgress = false,
@@ -246,6 +248,28 @@ export default function SegmentPanel({
             </div>
           )}
         </div>
+
+        {/* From your library — your actual Spotify top tracks, guaranteed to match your taste */}
+        {yourTopTracks.filter((t) => !addedIds.has(t.id)).length > 0 && (
+          <div className="mb-4">
+            <p className="text-xs font-medium uppercase tracking-widest mb-3" style={{ color: "#888888" }}>
+              From your library
+            </p>
+            <div className="flex flex-col gap-2">
+              {yourTopTracks.filter((t) => !addedIds.has(t.id)).map((track) => (
+                <TrackCard
+                  key={track.id}
+                  track={track}
+                  isAdded={false}
+                  activePreviewId={activePreviewId}
+                  onPreviewPlay={onPreviewPlay}
+                  onAdd={onAddTrack}
+                  onRemove={onRemoveTrack}
+                />
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* Added tracks */}
         {addedTracks.length > 0 && (

@@ -18,7 +18,7 @@ export async function GET(req: NextRequest) {
     if (artist) {
       const [generic, byArtist] = await Promise.all([
         searchTracks(query, session.accessToken, 6),
-        searchTracks(`artist:"${artist}" ${query}`, session.accessToken, 4),
+        searchTracks(`artist:"${artist}"`, session.accessToken, 4),
       ])
       const seen = new Set<string>()
       const tracks = [...byArtist, ...generic].filter((t) => {

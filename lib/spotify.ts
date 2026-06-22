@@ -59,6 +59,20 @@ export async function getTopArtists(
   return (data.items ?? []).map((a: { id: string; name: string }) => ({ id: a.id, name: a.name }))
 }
 
+export async function getTopTracks(
+  accessToken: string,
+  limit = 30,
+  timeRange: "short_term" | "medium_term" | "long_term" = "medium_term"
+): Promise<SpotifyTrack[]> {
+  const res = await fetch(
+    `https://api.spotify.com/v1/me/top/tracks?time_range=${timeRange}&limit=${limit}`,
+    { headers: { Authorization: `Bearer ${accessToken}` } }
+  )
+  if (!res.ok) return []
+  const data = await res.json()
+  return (data.items ?? []).map(formatTrack)
+}
+
 export async function getSpotifyUser(accessToken: string): Promise<{ id: string; displayName: string }> {
   const res = await fetch("https://api.spotify.com/v1/me", {
     headers: { Authorization: `Bearer ${accessToken}` },

@@ -27,6 +27,7 @@ export default function CustomClassBuilderPage() {
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [editingStructure, setEditingStructure] = useState(false)
   const [topArtists, setTopArtists] = useState<{ id: string; name: string }[]>([])
+  const [topTracks, setTopTracks] = useState<SpotifyTrack[]>([])
 
   const segmentRefs = useRef<Record<string, HTMLDivElement | null>>({})
 
@@ -50,6 +51,11 @@ export default function CustomClassBuilderPage() {
       .then((res) => res.json())
       .then((data) => setTopArtists(data.artists ?? []))
       .catch(() => setTopArtists([]))
+
+    fetch("/api/top-tracks")
+      .then((res) => res.json())
+      .then((data) => setTopTracks(data.tracks ?? []))
+      .catch(() => setTopTracks([]))
   }, [])
 
   if (status === "loading" || !sections) return <LoadingScreen />
@@ -221,7 +227,7 @@ export default function CustomClassBuilderPage() {
         />
 
         {/* Section panels */}
-        {template.segments.map((seg) => (
+        {template.segments.map((seg, i) => (
           <div
             key={seg.id}
             ref={(el) => { segmentRefs.current[seg.id] = el }}
@@ -232,6 +238,7 @@ export default function CustomClassBuilderPage() {
               addedTracks={classTracks[seg.id] ?? []}
               activePreviewId={activePreviewId}
               topArtists={topArtists}
+              yourTopTracks={topTracks.filter((_, idx) => idx % template.segments.length === i)}
               expandable
               showBpm={false}
               showProgress
