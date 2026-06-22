@@ -1,5 +1,6 @@
 "use client"
 
+import { useState } from "react"
 import Image from "next/image"
 import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import AudioPreview from "./AudioPreview"
@@ -21,6 +22,8 @@ export default function TrackCard({
   onAdd,
   onRemove,
 }: Props) {
+  const [showEmbed, setShowEmbed] = useState(false)
+
   return (
     <div
       className="rounded-xl overflow-hidden"
@@ -62,7 +65,7 @@ export default function TrackCard({
           {formatDuration(track.durationMs)}
         </span>
 
-        {/* Preview button — inline 30s clip if available, else open the track on Spotify */}
+        {/* Preview button — inline 30s clip if available, else fall back to Spotify embed */}
         {track.previewUrl ? (
           <AudioPreview
             previewUrl={track.previewUrl}
@@ -71,19 +74,16 @@ export default function TrackCard({
             onPlay={onPreviewPlay}
           />
         ) : (
-          <a
-            href={`https://open.spotify.com/track/${track.id}`}
-            target="_blank"
-            rel="noopener noreferrer"
-            onClick={(e) => e.stopPropagation()}
+          <button
+            onClick={() => setShowEmbed((s) => !s)}
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80"
-            style={{ background: "#242424" }}
-            title="Open on Spotify"
+            style={{ background: showEmbed ? "#1DB954" : "#242424" }}
+            title="Preview on Spotify"
           >
-            <svg width="12" height="12" viewBox="0 0 24 24" fill="#888888">
+            <svg width="12" height="12" viewBox="0 0 24 24" fill={showEmbed ? "white" : "#888888"}>
               <path d="M12 3v10.55A4 4 0 1 0 14 17V7h4V3h-6z" />
             </svg>
-          </a>
+          </button>
         )}
 
         {/* Add / remove button */}
@@ -108,6 +108,18 @@ export default function TrackCard({
           )}
         </button>
       </div>
+
+      {/* Spotify embed fallback when no preview_url is available */}
+      {showEmbed && !track.previewUrl && (
+        <iframe
+          src={`https://open.spotify.com/embed/track/${track.id}?utm_source=generator&theme=0`}
+          width="100%"
+          height="80"
+          style={{ border: "none" }}
+          allow="encrypted-media"
+          loading="lazy"
+        />
+      )}
     </div>
   )
 }
