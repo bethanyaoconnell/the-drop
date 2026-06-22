@@ -12,6 +12,7 @@ type Props = {
 export default function AudioPreview({ previewUrl, trackId, activeTrackId, onPlay }: Props) {
   const audioRef = useRef<HTMLAudioElement | null>(null)
   const [progress, setProgress] = useState(0)
+  const [error, setError] = useState(false)
   const isPlaying = activeTrackId === trackId
 
   useEffect(() => {
@@ -26,6 +27,11 @@ export default function AudioPreview({ previewUrl, trackId, activeTrackId, onPla
         setProgress(0)
         onPlay("")
       })
+      audioRef.current.addEventListener("error", () => {
+        console.error("Preview audio failed to load:", previewUrl)
+        setError(true)
+        onPlay("")
+      })
     }
   }, [previewUrl, onPlay])
 
@@ -34,8 +40,13 @@ export default function AudioPreview({ previewUrl, trackId, activeTrackId, onPla
     if (!audio) return
 
     if (isPlaying) {
+      setError(false)
       audio.currentTime = 0
-      audio.play().catch(() => {})
+      audio.play().catch((err) => {
+        console.error("Preview playback failed:", err)
+        setError(true)
+        onPlay("")
+      })
     } else {
       audio.pause()
       audio.currentTime = 0
@@ -72,10 +83,14 @@ export default function AudioPreview({ previewUrl, trackId, activeTrackId, onPla
         onPlay(isPlaying ? "" : trackId)
       }}
       className="relative w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80"
-      style={{ background: isPlaying ? "#FF6B00" : "#242424" }}
-      title={isPlaying ? "Stop preview" : "Preview 30s"}
+      style={{ background: error ? "#ff6b6b" : isPlaying ? "#FF6B00" : "#242424" }}
+      title={error ? "Preview failed to play" : isPlaying ? "Stop preview" : "Preview 30s"}
     >
-      {isPlaying ? (
+      {error ? (
+        <svg width="10" height="10" viewBox="0 0 24 24" fill="white">
+          <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z" />
+        </svg>
+      ) : isPlaying ? (
         <>
           {/* Circular progress ring */}
           <svg
