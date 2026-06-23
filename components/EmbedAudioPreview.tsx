@@ -89,10 +89,24 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
       onPlay("")
       return
     }
-    setConnecting(true)
     setError(false)
+
+    // Once the embed infrastructure has been warmed up by an earlier play,
+    // later tracks are fast enough to just play optimistically — no blocking
+    // spinner, matching how this behaved before the very first cold start.
+    if (hasPlayedBefore) {
+      try {
+        const controller = await ensureController()
+        controller.play()
+        onPlay(trackId)
+      } catch {
+        setError(true)
+      }
+      return
+    }
+
+    setConnecting(true)
     awaitingStartRef.current = true
-    const safetyTimeoutMs = hasPlayedBefore ? 3000 : 8000
     try {
       const controller = await ensureController()
       controller.play()
@@ -103,7 +117,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
           awaitingStartRef.current = false
           setConnecting(false)
         }
-      }, safetyTimeoutMs)
+      }, 8000)
     } catch {
       awaitingStartRef.current = false
       setError(true)
