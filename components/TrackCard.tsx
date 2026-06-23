@@ -1,6 +1,7 @@
 "use client"
 
 import { useEffect, useRef, useState } from "react"
+import { createPortal } from "react-dom"
 import Image from "next/image"
 import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import AudioPreview from "./AudioPreview"
@@ -24,23 +25,39 @@ export default function TrackCard({
   onRemove,
 }: Props) {
   const [menuOpen, setMenuOpen] = useState(false)
+  const [menuPos, setMenuPos] = useState({ top: 0, left: 0 })
+  const buttonRef = useRef<HTMLButtonElement>(null)
   const menuRef = useRef<HTMLDivElement>(null)
 
   useEffect(() => {
     function handleClick(e: MouseEvent) {
-      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+      if (
+        menuRef.current && !menuRef.current.contains(e.target as Node) &&
+        buttonRef.current && !buttonRef.current.contains(e.target as Node)
+      ) {
+        setMenuOpen(false)
+      }
     }
     document.addEventListener("mousedown", handleClick)
     return () => document.removeEventListener("mousedown", handleClick)
   }, [])
 
+  function toggleMenu(e: React.MouseEvent) {
+    e.stopPropagation()
+    if (!menuOpen && buttonRef.current) {
+      const rect = buttonRef.current.getBoundingClientRect()
+      setMenuPos({ top: rect.bottom + 6, left: rect.right - 160 })
+    }
+    setMenuOpen((o) => !o)
+  }
+
   return (
     <div
-      className="rounded-xl overflow-hidden"
+      className="rounded-xl"
       style={{ border: `1px solid ${isAdded ? "#FF6B0044" : "#2A2A2A"}` }}
     >
       <div
-        className="flex items-center gap-3 p-3 transition-colors"
+        className="flex items-center gap-3 p-3 rounded-xl transition-colors"
         style={{ background: isAdded ? "#1E1500" : "#1A1A1A" }}
       >
         {/* Album art */}
@@ -76,12 +93,10 @@ export default function TrackCard({
         </span>
 
         {/* 3-dot menu */}
-        <div ref={menuRef} className="relative shrink-0">
+        <div className="relative shrink-0">
           <button
-            onClick={(e) => {
-              e.stopPropagation()
-              setMenuOpen((o) => !o)
-            }}
+            ref={buttonRef}
+            onClick={toggleMenu}
             className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
             style={{ background: "#242424" }}
             aria-label="More options"
@@ -92,23 +107,32 @@ export default function TrackCard({
               <circle cx="19" cy="12" r="2.2" />
             </svg>
           </button>
-          {menuOpen && (
-            <div
-              className="absolute right-0 mt-2 rounded-xl overflow-hidden min-w-[160px] z-50"
-              style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}
-            >
-              <a
-                href={`https://open.spotify.com/track/${track.id}`}
-                target="_blank"
-                rel="noopener noreferrer"
-                onClick={() => setMenuOpen(false)}
-                className="block w-full px-4 py-3 text-sm text-left text-white hover:opacity-70 transition-opacity"
-              >
-                Open in Spotify
-              </a>
-            </div>
-          )}
         </div>
+
+        {menuOpen && typeof document !== "undefined" && createPortal(
+          <div
+            ref={menuRef}
+            className="fixed rounded-xl overflow-hidden min-w-[160px] z-50"
+            style={{
+              top: menuPos.top,
+              left: menuPos.left,
+              background: "#1A1A1A",
+              border: "1px solid #2A2A2A",
+              boxShadow: "0 8px 32px rgba(0,0,0,0.6)",
+            }}
+          >
+            <a
+              href={`https://open.spotify.com/track/${track.id}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={() => setMenuOpen(false)}
+              className="block w-full px-4 py-3 text-sm text-left text-white hover:opacity-70 transition-opacity"
+            >
+              Open in Spotify
+            </a>
+          </div>,
+          document.body
+        )}
 
         {/* Preview button — inline 30s clip if available, else hidden Spotify embed player */}
         {track.previewUrl ? (
