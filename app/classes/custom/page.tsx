@@ -238,7 +238,8 @@ export default function CustomClassBuilderPage() {
               addedTracks={classTracks[seg.id] ?? []}
               activePreviewId={activePreviewId}
               topArtists={topArtists}
-              yourTopTracks={topTracks.filter((_, idx) => idx % template.segments.length === i)}
+              yourTopTracks={topTracks}
+              librarySeed={i}
               expandable
               showBpm={false}
               showProgress

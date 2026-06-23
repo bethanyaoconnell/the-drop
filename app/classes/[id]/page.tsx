@@ -155,7 +155,8 @@ export default function ClassBuilderPage() {
               addedTracks={classTracks[seg.id] ?? []}
               activePreviewId={activePreviewId}
               topArtists={topArtists}
-              yourTopTracks={topTracks.filter((_, idx) => idx % template.segments.length === i)}
+              yourTopTracks={topTracks}
+              librarySeed={i}
               onPreviewPlay={setActivePreviewId}
               onAddTrack={(track) => handleAddTrack(seg.id, track)}
               onRemoveTrack={(trackId) => handleRemoveTrack(seg.id, trackId)}

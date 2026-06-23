@@ -11,6 +11,7 @@ type Props = {
   activePreviewId: string | null
   topArtists: { id: string; name: string }[]
   yourTopTracks?: SpotifyTrack[]
+  librarySeed?: number
   expandable?: boolean
   showBpm?: boolean
   showProgress?: boolean
@@ -25,6 +26,7 @@ export default function SegmentPanel({
   activePreviewId,
   topArtists,
   yourTopTracks = [],
+  librarySeed = 0,
   expandable = false,
   showBpm = true,
   showProgress = false,
@@ -42,7 +44,23 @@ export default function SegmentPanel({
   const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([])
   const [searching, setSearching] = useState(false)
 
+  const [libraryPage, setLibraryPage] = useState(librarySeed)
+  const LIBRARY_PAGE_SIZE = 5
+
   const addedIds = new Set(addedTracks.map((t) => t.id))
+
+  const availableLibrary = yourTopTracks.filter((t) => !addedIds.has(t.id))
+  const libraryStart = availableLibrary.length > 0 ? (libraryPage * LIBRARY_PAGE_SIZE) % availableLibrary.length : 0
+  const libraryDisplay = availableLibrary.length > 0
+    ? Array.from(
+        { length: Math.min(LIBRARY_PAGE_SIZE, availableLibrary.length) },
+        (_, i) => availableLibrary[(libraryStart + i) % availableLibrary.length]
+      )
+    : []
+
+  function handleLibraryRefresh() {
+    setLibraryPage((p) => p + 1)
+  }
 
   useEffect(() => {
     const trimmed = searchQuery.trim()
@@ -250,13 +268,27 @@ export default function SegmentPanel({
         </div>
 
         {/* From your library — your actual Spotify top tracks, guaranteed to match your taste */}
-        {yourTopTracks.filter((t) => !addedIds.has(t.id)).length > 0 && (
+        {libraryDisplay.length > 0 && (
           <div className="mb-4">
-            <p className="text-xs font-medium uppercase tracking-widest mb-3" style={{ color: "#888888" }}>
-              From your library
-            </p>
+            <div className="flex items-center justify-between mb-3">
+              <p className="text-xs font-medium uppercase tracking-widest" style={{ color: "#888888" }}>
+                From your library
+              </p>
+              {availableLibrary.length > LIBRARY_PAGE_SIZE && (
+                <button
+                  onClick={handleLibraryRefresh}
+                  className="text-xs flex items-center gap-1 transition-opacity hover:opacity-70"
+                  style={{ color: "#FF6B00" }}
+                >
+                  <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M17.65 6.35A7.958 7.958 0 0 0 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0 1 12 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
+                  </svg>
+                  Refresh
+                </button>
+              )}
+            </div>
             <div className="flex flex-col gap-2">
-              {yourTopTracks.filter((t) => !addedIds.has(t.id)).map((track) => (
+              {libraryDisplay.map((track) => (
                 <TrackCard
                   key={track.id}
                   track={track}
