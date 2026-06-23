@@ -1,5 +1,6 @@
 "use client"
 
+import { useEffect, useRef, useState } from "react"
 import Image from "next/image"
 import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import AudioPreview from "./AudioPreview"
@@ -22,6 +23,17 @@ export default function TrackCard({
   onAdd,
   onRemove,
 }: Props) {
+  const [menuOpen, setMenuOpen] = useState(false)
+  const menuRef = useRef<HTMLDivElement>(null)
+
+  useEffect(() => {
+    function handleClick(e: MouseEvent) {
+      if (menuRef.current && !menuRef.current.contains(e.target as Node)) setMenuOpen(false)
+    }
+    document.addEventListener("mousedown", handleClick)
+    return () => document.removeEventListener("mousedown", handleClick)
+  }, [])
+
   return (
     <div
       className="rounded-xl overflow-hidden"
@@ -62,6 +74,41 @@ export default function TrackCard({
         <span className="text-xs shrink-0 tabular-nums" style={{ color: "#444444" }}>
           {formatDuration(track.durationMs)}
         </span>
+
+        {/* 3-dot menu */}
+        <div ref={menuRef} className="relative shrink-0">
+          <button
+            onClick={(e) => {
+              e.stopPropagation()
+              setMenuOpen((o) => !o)
+            }}
+            className="w-8 h-8 rounded-full flex items-center justify-center transition-opacity hover:opacity-80"
+            style={{ background: "#242424" }}
+            aria-label="More options"
+          >
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#888888">
+              <circle cx="12" cy="5" r="1.6" />
+              <circle cx="12" cy="12" r="1.6" />
+              <circle cx="12" cy="19" r="1.6" />
+            </svg>
+          </button>
+          {menuOpen && (
+            <div
+              className="absolute right-0 mt-2 rounded-xl overflow-hidden min-w-[160px] z-50"
+              style={{ background: "#1A1A1A", border: "1px solid #2A2A2A", boxShadow: "0 8px 32px rgba(0,0,0,0.6)" }}
+            >
+              <a
+                href={`https://open.spotify.com/track/${track.id}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                onClick={() => setMenuOpen(false)}
+                className="block w-full px-4 py-3 text-sm text-left text-white hover:opacity-70 transition-opacity"
+              >
+                Open in Spotify
+              </a>
+            </div>
+          )}
+        </div>
 
         {/* Preview button — inline 30s clip if available, else hidden Spotify embed player */}
         {track.previewUrl ? (
