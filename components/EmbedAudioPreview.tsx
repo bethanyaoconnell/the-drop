@@ -89,11 +89,15 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
 
   return (
     <>
+      {/* Outer wrapper is never touched by Spotify's API — createController replaces
+          the inner div with a real iframe, which would otherwise lose this hiding/
+          clipping since the inline styles live on the element being replaced. */}
       <div
-        ref={containerRef}
-        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none" }}
+        style={{ position: "absolute", width: 1, height: 1, overflow: "hidden", opacity: 0, pointerEvents: "none", zIndex: -1 }}
         aria-hidden
-      />
+      >
+        <div ref={containerRef} />
+      </div>
       <button
         onClick={(e) => {
           e.stopPropagation()
