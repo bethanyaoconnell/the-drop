@@ -12,6 +12,7 @@ type Props = {
 export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Props) {
   const containerRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<SpotifyEmbedController | null>(null)
+  const readyPromiseRef = useRef<Promise<SpotifyEmbedController> | null>(null)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(false)
   const isPlaying = activeTrackId === trackId
@@ -28,9 +29,14 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
     }
   }, [isPlaying])
 
+  // Creating the controller only instantiates the JS wrapper — the underlying
+  // iframe still needs to finish loading before it'll actually respond to
+  // play commands. Wait for the "ready" event (with a timeout fallback in
+  // case this API version doesn't emit it) before resolving.
   function ensureController(): Promise<SpotifyEmbedController> {
-    if (controllerRef.current) return Promise.resolve(controllerRef.current)
-    return new Promise((resolve, reject) => {
+    if (readyPromiseRef.current) return readyPromiseRef.current
+
+    readyPromiseRef.current = new Promise((resolve, reject) => {
       if (!containerRef.current) return reject(new Error("no container"))
       getSpotifyIframeApi()
         .then((IFrameAPI) => {
@@ -38,18 +44,28 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
             containerRef.current!,
             { uri: `spotify:track:${trackId}`, width: 1, height: 1 },
             (controller) => {
+              controllerRef.current = controller
+              let resolved = false
+              const finish = () => {
+                if (resolved) return
+                resolved = true
+                resolve(controller)
+              }
+              controller.addListener("ready", finish)
               controller.addListener("playback_update", (e) => {
+                finish()
                 if (e.data.isPaused && e.data.position === 0 && activeTrackId === trackId) {
                   onPlay("")
                 }
               })
-              controllerRef.current = controller
-              resolve(controller)
+              setTimeout(finish, 1500)
             }
           )
         })
         .catch(reject)
     })
+
+    return readyPromiseRef.current
   }
 
   async function handleClick() {
@@ -62,7 +78,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
     setError(false)
     try {
       const controller = await ensureController()
-      controller.resume()
+      controller.play()
       onPlay(trackId)
     } catch {
       setError(true)
