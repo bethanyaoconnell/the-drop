@@ -222,7 +222,7 @@ export default function SegmentPanel({
               type="text"
               value={searchQuery}
               onChange={(e) => setSearchQuery(e.target.value)}
-              placeholder="Search for a song…"
+              placeholder="Search for a song or vibe…"
               className="flex-1 bg-transparent outline-none text-sm text-white placeholder:text-[#666666]"
             />
             {searchQuery && (
