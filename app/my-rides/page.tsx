@@ -34,13 +34,13 @@ export default function MyRidesPage() {
             <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
           </svg>
         </button>
-        <h1 className="text-base font-bold text-white">My Rides</h1>
+        <h1 className="text-base font-bold text-white">My Playlists</h1>
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-6">
         {playlists.length === 0 ? (
           <div className="text-center py-24">
-            <p className="text-white font-semibold mb-2">No saved rides yet</p>
+            <p className="text-white font-semibold mb-2">No saved playlists yet</p>
             <p className="text-sm mb-6" style={{ color: "#888888" }}>
               Build a class and hit Save to find it here.
             </p>
@@ -49,7 +49,7 @@ export default function MyRidesPage() {
               className="px-6 py-3 rounded-full font-semibold text-white"
               style={{ background: "#FF6B00" }}
             >
-              Build a ride
+              Build a playlist
             </button>
           </div>
         ) : (
@@ -72,7 +72,7 @@ export default function MyRidesPage() {
                   onClick={(e) => handleDelete(p.id, e)}
                   className="ml-4 w-8 h-8 rounded-full flex items-center justify-center shrink-0 transition-opacity hover:opacity-80"
                   style={{ background: "#242424" }}
-                  aria-label="Delete ride"
+                  aria-label="Delete playlist"
                 >
                   <svg width="12" height="12" viewBox="0 0 24 24" fill="#888888">
                     <path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" />

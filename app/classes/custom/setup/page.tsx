@@ -15,7 +15,7 @@ export default function CustomSetupPage() {
   const router = useRouter()
 
   const [step, setStep] = useState<"setup" | "preview">("setup")
-  const [name, setName] = useState("My Custom Ride")
+  const [name, setName] = useState("My Custom Class")
   const [totalTargetMin, setTotalTargetMin] = useState(45)
   const [sections, setSections] = useState<CustomSection[]>([
     newSection("Warm-up", 10),
@@ -72,11 +72,11 @@ export default function CustomSetupPage() {
               Set a total duration, then break it into your own sections.
             </p>
 
-            {/* Ride name + total duration */}
+            {/* Class name + total duration */}
             <div className="flex flex-col gap-4 mb-8">
               <label className="block">
                 <span className="text-xs font-medium uppercase tracking-widest block mb-2" style={{ color: "#888888" }}>
-                  Ride name
+                  Class name
                 </span>
                 <input
                   type="text"

@@ -29,7 +29,7 @@ export function customSectionsToSegments(sections: CustomSection[]): Segment[] {
       color: CUSTOM_COLORS[i % CUSTOM_COLORS.length],
       searchQueries: [
         s.name || "workout",
-        `${s.name} cycling music`,
+        `${s.name} workout music`,
         `${s.name} workout playlist`,
       ],
     }
@@ -39,7 +39,7 @@ export function customSectionsToSegments(sections: CustomSection[]): Segment[] {
 export function buildCustomTemplate(name: string, sections: CustomSection[]): ClassTemplate {
   return {
     id: "custom",
-    name: name || "My Custom Ride",
+    name: name || "My Custom Class",
     totalMin: sections.reduce((sum, s) => sum + s.durationMin, 0),
     description: "Custom structure",
     segments: customSectionsToSegments(sections),

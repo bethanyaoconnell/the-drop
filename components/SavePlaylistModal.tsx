@@ -61,9 +61,9 @@ export default function SavePlaylistModal({
                 <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z" />
               </svg>
             </div>
-            <h2 className="text-2xl font-bold text-white mb-2">Ride saved!</h2>
+            <h2 className="text-2xl font-bold text-white mb-2">Playlist saved!</h2>
             <p className="text-sm mb-6" style={{ color: "#888888" }}>
-              Find it anytime in My Rides.
+              Find it anytime in My Playlists.
             </p>
             <div className="flex flex-col gap-3">
               <button
@@ -71,7 +71,7 @@ export default function SavePlaylistModal({
                 className="flex items-center justify-center gap-2 py-3 rounded-full font-semibold text-white transition-opacity hover:opacity-90"
                 style={{ background: "#FF6B00" }}
               >
-                View ride
+                View playlist
               </button>
               <button
                 onClick={onClose}
@@ -85,7 +85,7 @@ export default function SavePlaylistModal({
         ) : (
           <>
             <div className="flex items-center justify-between mb-6">
-              <h2 className="text-xl font-bold text-white">Save ride</h2>
+              <h2 className="text-xl font-bold text-white">Save playlist</h2>
               <button
                 onClick={onClose}
                 className="w-8 h-8 rounded-full flex items-center justify-center"
@@ -98,12 +98,12 @@ export default function SavePlaylistModal({
             </div>
 
             <p className="text-sm mb-4" style={{ color: "#888888" }}>
-              {totalTracks} tracks · Saved to My Rides
+              {totalTracks} tracks · Saved to My Playlists
             </p>
 
             <label className="block mb-4">
               <span className="text-xs font-medium uppercase tracking-widest block mb-2" style={{ color: "#888888" }}>
-                Ride name
+                Playlist name
               </span>
               <input
                 type="text"
@@ -111,7 +111,7 @@ export default function SavePlaylistModal({
                 onChange={(e) => setName(e.target.value)}
                 className="w-full px-4 py-3 rounded-xl text-white text-sm outline-none focus:ring-1"
                 style={{ background: "#242424", border: "1px solid #2A2A2A" }}
-                placeholder="Name your ride…"
+                placeholder="Name your playlist…"
                 maxLength={100}
                 autoFocus
               />
@@ -123,7 +123,7 @@ export default function SavePlaylistModal({
               className="w-full py-3.5 rounded-full font-semibold text-white transition-opacity disabled:opacity-40"
               style={{ background: "#FF6B00" }}
             >
-              Save ride
+              Save playlist
             </button>
           </>
         )}

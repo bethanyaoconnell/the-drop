@@ -6,7 +6,7 @@ export default function TermsOfService() {
 
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-2" style={{ color: "#FFFFFF" }}>About The Drop</h2>
-        <p>The Drop is a personal, non-commercial web application that helps spin instructors build Spotify playlists for their classes.</p>
+        <p>The Drop is a personal, non-commercial web application that helps fitness instructors build Spotify playlists for their classes.</p>
       </section>
 
       <section className="mb-8">

@@ -34,8 +34,8 @@ const SEGMENT_SEARCH_QUERIES: Record<SegmentType, string[]> = {
   warmup:    ["workout warmup music", "warm up cardio beats", "light workout motivation"],
   build:     ["building energy workout", "progressive cardio music", "workout build up"],
   intervals: ["HIIT interval workout music", "high intensity intervals", "sprint workout EDM"],
-  peak:      ["peak cardio intensity", "cycling race music EDM", "maximum effort workout"],
-  climb:     ["steady climb cycling music", "power endurance workout", "hill climb motivation"],
+  peak:      ["peak cardio intensity", "high energy EDM workout", "maximum effort workout"],
+  climb:     ["sustained effort workout music", "power endurance workout", "steady push motivation"],
   cooldown:  ["workout cooldown music", "post workout relax", "cool down stretch"],
   custom:    [],
 }
@@ -65,14 +65,14 @@ function seg(
 export const CLASS_TEMPLATES: ClassTemplate[] = [
   {
     id: "45min-hiit",
-    name: "45-Min HIIT Ride",
+    name: "45-Min HIIT Class",
     totalMin: 45,
     description: "High-intensity intervals with a build and recovery arc",
     segments: [
       seg("warmup",    "warmup",    "Warmup",         5,  110, 130, 0.40),
       seg("build",     "build",     "Build",          8,  125, 145, 0.65),
       seg("intervals", "intervals", "Peak Intervals", 15, 145, 175, 0.90),
-      seg("climb",     "climb",     "Climb",          10, 135, 155, 0.75),
+      seg("climb",     "climb",     "Steady Push",    10, 135, 155, 0.75),
       seg("cooldown",  "cooldown",  "Cooldown",       7,  80,  110, 0.25),
     ],
   },
@@ -95,7 +95,7 @@ export const CLASS_TEMPLATES: ClassTemplate[] = [
     segments: [
       seg("warmup",    "warmup",    "Warmup",       8,  110, 130, 0.40),
       seg("build",     "build",     "Build",        10, 125, 145, 0.65),
-      seg("climb",     "climb",     "Steady Climb", 20, 135, 155, 0.75),
+      seg("climb",     "climb",     "Steady Push",  20, 135, 155, 0.75),
       seg("peak",      "peak",      "Peak",         12, 145, 175, 0.95),
       seg("cooldown",  "cooldown",  "Cooldown",     10, 80,  110, 0.25),
     ],

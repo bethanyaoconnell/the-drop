@@ -6,7 +6,7 @@ export default function PrivacyPolicy() {
 
       <section className="mb-8">
         <h2 className="text-lg font-semibold mb-2" style={{ color: "#FFFFFF" }}>What is The Drop?</h2>
-        <p>The Drop is a web app that helps spin instructors build Spotify playlists for their classes. It is a personal, non-commercial project.</p>
+        <p>The Drop is a web app that helps fitness instructors — spin, yoga, HIIT, strength, barre, and beyond — build Spotify playlists for their classes. It is a personal, non-commercial project.</p>
       </section>
 
       <section className="mb-8">

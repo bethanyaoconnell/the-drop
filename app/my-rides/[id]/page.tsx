@@ -50,9 +50,9 @@ export default function SavedRidePage() {
     return (
       <div className="min-h-screen flex items-center justify-center" style={{ background: "#0A0A0A" }}>
         <div className="text-center">
-          <p className="text-white mb-4">Ride not found.</p>
+          <p className="text-white mb-4">Playlist not found.</p>
           <button onClick={() => router.push("/my-rides")} style={{ color: "#FF6B00" }}>
-            ← My Rides
+            ← My Playlists
           </button>
         </div>
       </div>

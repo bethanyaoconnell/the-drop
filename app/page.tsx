@@ -31,16 +31,16 @@ export default function LandingPage() {
           className="text-5xl font-bold tracking-tight mb-4 leading-tight"
           style={{ color: "#FFFFFF" }}
         >
-          Build your ride.
+          Build your set.
         </h1>
         <p className="text-lg max-w-sm mx-auto leading-relaxed" style={{ color: "#888888" }}>
-          Create perfectly paced Spotify playlists matched to every phase of your spin class.
+          Create perfectly paced Spotify playlists matched to every phase of your class — yoga, spin, HIIT, strength, and beyond.
         </p>
       </div>
 
       {/* Feature pills */}
       <div className="flex flex-wrap gap-3 justify-center mb-12">
-        {["Warmup to Cooldown", "Segment-matched tracks", "30-sec previews", "Save to Spotify"].map(
+        {["Warmup to cooldown", "Segment-matched tracks", "30-sec previews", "Queue in Spotify"].map(
           (f) => (
             <span
               key={f}
@@ -68,7 +68,7 @@ export default function LandingPage() {
         style={{ background: "#FF6B00", color: "#FFFFFF" }}
       >
         <SpotifyIcon />
-        {status === "authenticated" ? "Build my ride" : "Connect with Spotify"}
+        {status === "authenticated" ? "Build my set" : "Connect with Spotify"}
       </button>
 
       <p className="mt-6 text-sm" style={{ color: "#444444" }}>

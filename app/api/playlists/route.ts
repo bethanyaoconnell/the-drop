@@ -23,7 +23,7 @@ export async function POST(req: NextRequest) {
     const playlistId = await createPlaylist(
       user.id,
       name,
-      description ?? "Created with Spin Playlist Builder",
+      description ?? "Created with The Drop",
       session.accessToken
     )
     await addTracksToPlaylist(playlistId, trackUris, session.accessToken)

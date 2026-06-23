@@ -47,13 +47,13 @@ export default function AccountMenu() {
             {email && <p className="text-xs mt-0.5 truncate" style={{ color: "#888888" }}>{email}</p>}
           </div>
 
-          {/* My Rides */}
+          {/* My Playlists */}
           <button
             onClick={() => { setOpen(false); router.push("/my-rides") }}
             className="w-full px-4 py-3 text-sm text-left text-white hover:opacity-70 transition-opacity"
             style={{ borderBottom: "1px solid #2A2A2A" }}
           >
-            My Rides
+            My Playlists
           </button>
 
           {/* Sign out */}
