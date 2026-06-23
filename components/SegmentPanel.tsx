@@ -123,7 +123,7 @@ export default function SegmentPanel({
 
   return (
     <div
-      className="rounded-2xl overflow-hidden"
+      className="rounded-2xl"
       style={{ border: "1px solid #2A2A2A" }}
     >
       {/* Segment header */}
@@ -137,7 +137,7 @@ export default function SegmentPanel({
 
         return (
           <div
-            className="px-5 py-4 flex items-center gap-3"
+            className={`px-5 py-4 flex items-center gap-3 rounded-t-2xl ${!expanded ? "rounded-b-2xl" : ""}`}
             style={{
               position: "sticky",
               top: stickyTop,
@@ -213,7 +213,7 @@ export default function SegmentPanel({
       })()}
 
       {expanded && (
-      <div className="p-4" style={{ background: "#111111" }}>
+      <div className="p-4 rounded-b-2xl" style={{ background: "#111111" }}>
         {/* Search bar */}
         <div className="relative mb-4">
           <div
