@@ -1,5 +1,6 @@
 import { auth } from "@/auth"
-import { searchTracks } from "@/lib/spotify"
+import { checkRecommendationsApi, getRecommendationsByProfile, searchTracks } from "@/lib/spotify"
+import { isVibeQuery, vibeAudioProfile, vibeSearchTerms } from "@/lib/vibeMapping"
 import { NextRequest, NextResponse } from "next/server"
 
 export async function GET(req: NextRequest) {
@@ -15,6 +16,33 @@ export async function GET(req: NextRequest) {
   }
 
   try {
+    // Vibe / mood query — e.g. "energetic and euphoric", "dark and driving"
+    if (isVibeQuery(query)) {
+      const recsAvailable = await checkRecommendationsApi(session.accessToken)
+
+      if (recsAvailable) {
+        const profile = vibeAudioProfile(query)
+        const tracks = await getRecommendationsByProfile(session.accessToken, profile, 10)
+        return NextResponse.json({ tracks, vibeMode: "recommendations" })
+      }
+
+      // Fall back to keyword-mapped search since Recommendations API is unavailable
+      // (deprecated by Spotify for all apps created after Nov 27, 2024)
+      const terms = vibeSearchTerms(query)
+      const results = await Promise.all(terms.map((t) => searchTracks(t, session.accessToken!, 5)))
+      const seen = new Set<string>()
+      const tracks = results.flat().filter((t) => {
+        if (seen.has(t.id)) return false
+        seen.add(t.id)
+        return true
+      })
+      return NextResponse.json({
+        tracks: tracks.slice(0, 10),
+        vibeMode: "keyword-fallback",
+        notice: "Spotify's mood-recommendation API isn't available for this app, so this is matched by keyword instead.",
+      })
+    }
+
     if (artist) {
       const [generic, byArtist] = await Promise.all([
         searchTracks(query, session.accessToken, 6),

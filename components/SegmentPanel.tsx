@@ -43,6 +43,7 @@ export default function SegmentPanel({
   const [searchQuery, setSearchQuery] = useState("")
   const [searchResults, setSearchResults] = useState<SpotifyTrack[]>([])
   const [searching, setSearching] = useState(false)
+  const [searchNotice, setSearchNotice] = useState<string | null>(null)
 
   const [libraryPage, setLibraryPage] = useState(librarySeed)
   const LIBRARY_PAGE_SIZE = 5
@@ -75,8 +76,10 @@ export default function SegmentPanel({
         const res = await fetch(`/api/recommendations?query=${encodeURIComponent(trimmed)}`)
         const data = await res.json()
         setSearchResults(data.tracks ?? [])
+        setSearchNotice(data.notice ?? null)
       } catch {
         setSearchResults([])
+        setSearchNotice(null)
       } finally {
         setSearching(false)
       }
@@ -88,6 +91,7 @@ export default function SegmentPanel({
     onAddTrack(track)
     setSearchQuery("")
     setSearchResults([])
+    setSearchNotice(null)
   }
 
   async function fetchRecommendations(qIdx = queryIndex) {
@@ -223,7 +227,7 @@ export default function SegmentPanel({
             />
             {searchQuery && (
               <button
-                onClick={() => { setSearchQuery(""); setSearchResults([]) }}
+                onClick={() => { setSearchQuery(""); setSearchResults([]); setSearchNotice(null) }}
                 className="shrink-0 transition-opacity hover:opacity-70"
                 style={{ color: "#666666" }}
                 aria-label="Clear search"
@@ -246,6 +250,11 @@ export default function SegmentPanel({
                 </div>
               ) : searchResults.length > 0 ? (
                 <div className="flex flex-col gap-2">
+                  {searchNotice && (
+                    <p className="text-xs px-1 mb-1" style={{ color: "#666666" }}>
+                      {searchNotice}
+                    </p>
+                  )}
                   {searchResults.map((track) => (
                     <TrackCard
                       key={track.id}

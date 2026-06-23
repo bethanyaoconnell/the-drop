@@ -46,6 +46,60 @@ export async function searchTracks(
   return (data.tracks?.items ?? []).map(formatTrack)
 }
 
+// Cached app-wide capability check — recommendations access doesn't vary per user,
+// it's gated by when this app's Client ID was created. Avoids repeating a failing
+// call on every vibe search.
+let recommendationsAvailable: boolean | null = null
+
+export async function checkRecommendationsApi(accessToken: string): Promise<boolean> {
+  if (recommendationsAvailable !== null) return recommendationsAvailable
+  try {
+    const res = await fetch(
+      "https://api.spotify.com/v1/recommendations?seed_genres=pop&limit=1",
+      { headers: { Authorization: `Bearer ${accessToken}` } }
+    )
+    recommendationsAvailable = res.ok
+  } catch {
+    recommendationsAvailable = false
+  }
+  return recommendationsAvailable
+}
+
+export async function getRecommendationsByProfile(
+  accessToken: string,
+  profile: { energy?: [number, number]; valence?: [number, number]; tempo?: [number, number]; danceability?: [number, number] },
+  limit = 10
+): Promise<SpotifyTrack[]> {
+  const params = new URLSearchParams({
+    seed_genres: "pop,dance,electronic",
+    limit: String(limit),
+    market: "US",
+  })
+  if (profile.energy) {
+    params.set("min_energy", String(profile.energy[0]))
+    params.set("max_energy", String(profile.energy[1]))
+  }
+  if (profile.valence) {
+    params.set("min_valence", String(profile.valence[0]))
+    params.set("max_valence", String(profile.valence[1]))
+  }
+  if (profile.tempo) {
+    params.set("min_tempo", String(profile.tempo[0]))
+    params.set("max_tempo", String(profile.tempo[1]))
+  }
+  if (profile.danceability) {
+    params.set("min_danceability", String(profile.danceability[0]))
+    params.set("max_danceability", String(profile.danceability[1]))
+  }
+
+  const res = await fetch(`https://api.spotify.com/v1/recommendations?${params}`, {
+    headers: { Authorization: `Bearer ${accessToken}` },
+  })
+  if (!res.ok) throw new Error(`Recommendations failed: ${res.status}`)
+  const data = await res.json()
+  return (data.tracks ?? []).map(formatTrack)
+}
+
 export async function getTopArtists(
   accessToken: string,
   limit = 10
