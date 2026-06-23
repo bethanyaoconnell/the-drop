@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import {
   CustomSection,
   CUSTOM_COLORS,
@@ -32,9 +32,19 @@ export default function CustomClassBuilderPage() {
   const segmentIds = sections?.map((s) => s.id) ?? []
   const { activeId: activeSegmentId, setRef, scrollTo } = useActiveSection(segmentIds)
 
+  const navRef = useRef<HTMLDivElement>(null)
+  const [navHeight, setNavHeight] = useState(64)
+
   useEffect(() => {
     if (status === "unauthenticated") router.push("/")
   }, [status, router])
+
+  useEffect(() => {
+    if (!navRef.current) return
+    const observer = new ResizeObserver(([entry]) => setNavHeight(entry.contentRect.height))
+    observer.observe(navRef.current)
+    return () => observer.disconnect()
+  }, [])
 
   useEffect(() => {
     const draft = loadDraftStructure()
@@ -122,14 +132,11 @@ export default function CustomClassBuilderPage() {
     tracks: classTracks[sec.id] ?? [],
   }))
 
-  const activeSegment = template.segments.find((s) => s.id === activeSegmentId)
-  const activeUsedMs = (classTracks[activeSegmentId] ?? []).reduce((s, t) => s + t.durationMs, 0)
-  const activeRemainingMin = activeSegment ? activeSegment.durationMin - activeUsedMs / 60000 : 0
-
   return (
     <main className="min-h-screen pb-32" style={{ background: "#0A0A0A" }}>
-      {/* Top nav + active section indicator, stacked in one sticky container */}
+      {/* Top nav */}
       <div
+        ref={navRef}
         className="sticky top-0 z-10"
         style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1A1A1A" }}
       >
@@ -168,30 +175,6 @@ export default function CustomClassBuilderPage() {
             </button>
           )}
         </div>
-
-        {/* Condensed active-section indicator */}
-        {activeSegment && (
-          <div
-            className="flex items-center justify-between gap-3 pl-4 pr-16 py-1.5"
-            style={{ borderTop: "1px solid #1A1A1A" }}
-          >
-            <div className="flex items-center gap-2 min-w-0">
-              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: activeSegment.color }} />
-              <span className="text-xs font-semibold text-white truncate">{activeSegment.name}</span>
-              <span className="text-xs shrink-0" style={{ color: "#555555" }}>
-                {activeSegment.durationMin}m target
-              </span>
-            </div>
-            <span
-              className="text-xs shrink-0 tabular-nums"
-              style={{ color: activeRemainingMin < 0 ? "#ff9f43" : "#666666" }}
-            >
-              {activeRemainingMin >= 0
-                ? `${activeRemainingMin.toFixed(1)}m left`
-                : `${Math.abs(activeRemainingMin).toFixed(1)}m over`}
-            </span>
-          </div>
-        )}
       </div>
 
       <div className="max-w-2xl mx-auto px-4 pt-5 space-y-5">
@@ -266,6 +249,7 @@ export default function CustomClassBuilderPage() {
               topArtists={topArtists}
               yourTopTracks={topTracks}
               librarySeed={i}
+              stickyTop={navHeight}
               expandable
               showBpm={false}
               showProgress

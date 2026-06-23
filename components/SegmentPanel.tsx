@@ -12,6 +12,7 @@ type Props = {
   topArtists: { id: string; name: string }[]
   yourTopTracks?: SpotifyTrack[]
   librarySeed?: number
+  stickyTop?: number
   expandable?: boolean
   showBpm?: boolean
   showProgress?: boolean
@@ -27,6 +28,7 @@ export default function SegmentPanel({
   topArtists,
   yourTopTracks = [],
   librarySeed = 0,
+  stickyTop = 64,
   expandable = false,
   showBpm = true,
   showProgress = false,
@@ -137,6 +139,9 @@ export default function SegmentPanel({
           <div
             className="px-5 py-4 flex items-center gap-3"
             style={{
+              position: "sticky",
+              top: stickyTop,
+              zIndex: 5,
               borderLeft: `3px solid ${segment.color}`,
               background: "#1A1A1A",
               cursor: expandable ? "pointer" : "default",
