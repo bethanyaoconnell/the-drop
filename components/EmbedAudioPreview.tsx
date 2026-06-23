@@ -3,6 +3,13 @@
 import { useEffect, useRef, useState } from "react"
 import { getSpotifyIframeApi, SpotifyEmbedController } from "@/lib/spotifyEmbedApi"
 
+// Shared across every instance for the lifetime of the page — the first preview
+// click has to cold-start Spotify's embed infrastructure (script load, first
+// iframe handshake), which genuinely can take 5+ seconds. Once that's happened
+// once, subsequent previews are much faster, so the spinner's safety timeout
+// can be much shorter.
+let hasPlayedBefore = false
+
 type Props = {
   trackId: string
   activeTrackId: string | null
@@ -59,6 +66,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
                 // stream — only clear the spinner once it's actually flowing.
                 if (awaitingStartRef.current && !e.data.isBuffering) {
                   awaitingStartRef.current = false
+                  hasPlayedBefore = true
                   setConnecting(false)
                 }
                 if (e.data.isPaused && e.data.position === 0 && activeTrackId === trackId) {
@@ -84,6 +92,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
     setConnecting(true)
     setError(false)
     awaitingStartRef.current = true
+    const safetyTimeoutMs = hasPlayedBefore ? 3000 : 8000
     try {
       const controller = await ensureController()
       controller.play()
@@ -94,7 +103,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
           awaitingStartRef.current = false
           setConnecting(false)
         }
-      }, 8000)
+      }, safetyTimeoutMs)
     } catch {
       awaitingStartRef.current = false
       setError(true)
