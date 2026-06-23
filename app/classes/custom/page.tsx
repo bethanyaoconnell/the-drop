@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import {
   CustomSection,
   CUSTOM_COLORS,
@@ -32,19 +32,9 @@ export default function CustomClassBuilderPage() {
   const segmentIds = sections?.map((s) => s.id) ?? []
   const { activeId: activeSegmentId, setRef, scrollTo } = useActiveSection(segmentIds)
 
-  const navRef = useRef<HTMLDivElement>(null)
-  const [navHeight, setNavHeight] = useState(64)
-
   useEffect(() => {
     if (status === "unauthenticated") router.push("/")
   }, [status, router])
-
-  useEffect(() => {
-    if (!navRef.current) return
-    const observer = new ResizeObserver(([entry]) => setNavHeight(entry.contentRect.height))
-    observer.observe(navRef.current)
-    return () => observer.disconnect()
-  }, [])
 
   useEffect(() => {
     const draft = loadDraftStructure()
@@ -134,13 +124,12 @@ export default function CustomClassBuilderPage() {
 
   return (
     <main className="min-h-screen pb-32" style={{ background: "#0A0A0A" }}>
-      {/* Top nav */}
+      {/* Top nav — fixed height so segment headers below can stick at a known offset */}
       <div
-        ref={navRef}
         className="sticky top-0 z-10"
         style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1A1A1A" }}
       >
-        <div className="flex items-center gap-4 pl-4 pr-16 py-3">
+        <div className="flex items-center gap-4 pl-4 pr-16 h-16">
           <button
             onClick={() => router.push("/classes/new")}
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
@@ -152,7 +141,7 @@ export default function CustomClassBuilderPage() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-bold text-white truncate">{name || "My Custom Ride"}</h1>
-            <p className="text-xs" style={{ color: overTarget ? "#ff9f43" : "#888888" }}>
+            <p className="text-xs truncate" style={{ color: overTarget ? "#ff9f43" : "#888888" }}>
               {totalTracks > 0
                 ? `${totalTracks} tracks · ${formatDuration(totalDurationMs)} / ${totalTargetMin}m target`
                 : `No tracks yet · ${totalTargetMin}m target`}
@@ -249,7 +238,6 @@ export default function CustomClassBuilderPage() {
               topArtists={topArtists}
               yourTopTracks={topTracks}
               librarySeed={i}
-              stickyTop={navHeight}
               expandable
               showBpm={false}
               showProgress

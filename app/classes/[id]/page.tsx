@@ -2,7 +2,7 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { getTemplate } from "@/lib/templates"
 import { SpotifyTrack, formatDuration } from "@/lib/spotify"
 import { useActiveSection } from "@/lib/useActiveSection"
@@ -28,9 +28,6 @@ export default function ClassBuilderPage() {
   const segmentIds = template?.segments.map((s) => s.id) ?? []
   const { activeId: activeSegmentId, setRef, scrollTo } = useActiveSection(segmentIds)
 
-  const navRef = useRef<HTMLDivElement>(null)
-  const [navHeight, setNavHeight] = useState(64)
-
   useEffect(() => {
     fetch("/api/top-artists")
       .then((res) => res.json())
@@ -46,13 +43,6 @@ export default function ClassBuilderPage() {
   useEffect(() => {
     if (status === "unauthenticated") router.push("/")
   }, [status, router])
-
-  useEffect(() => {
-    if (!navRef.current) return
-    const observer = new ResizeObserver(([entry]) => setNavHeight(entry.contentRect.height))
-    observer.observe(navRef.current)
-    return () => observer.disconnect()
-  }, [])
 
   if (status === "loading") return <LoadingScreen />
   if (!template) {
@@ -100,13 +90,12 @@ export default function ClassBuilderPage() {
 
   return (
     <main className="min-h-screen pb-32" style={{ background: "#0A0A0A" }}>
-      {/* Top nav */}
+      {/* Top nav — fixed height so segment headers below can stick at a known offset */}
       <div
-        ref={navRef}
         className="sticky top-0 z-10"
         style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1A1A1A" }}
       >
-        <div className="flex items-center gap-4 pl-4 pr-16 py-3">
+        <div className="flex items-center gap-4 pl-4 pr-16 h-16">
           <button
             onClick={() => router.push("/classes/new")}
             className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
@@ -118,7 +107,7 @@ export default function ClassBuilderPage() {
           </button>
           <div className="flex-1 min-w-0">
             <h1 className="text-base font-bold text-white truncate">{template.name}</h1>
-            <p className="text-xs" style={{ color: "#888888" }}>
+            <p className="text-xs truncate" style={{ color: "#888888" }}>
               {totalTracks > 0
                 ? `${totalTracks} tracks · ${formatDuration(totalDurationMs)}`
                 : "No tracks yet"}
@@ -160,7 +149,6 @@ export default function ClassBuilderPage() {
               topArtists={topArtists}
               yourTopTracks={topTracks}
               librarySeed={i}
-              stickyTop={navHeight}
               onPreviewPlay={setActivePreviewId}
               onAddTrack={(track) => handleAddTrack(seg.id, track)}
               onRemoveTrack={(trackId) => handleRemoveTrack(seg.id, trackId)}
