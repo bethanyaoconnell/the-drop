@@ -13,6 +13,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
   const containerRef = useRef<HTMLDivElement>(null)
   const controllerRef = useRef<SpotifyEmbedController | null>(null)
   const readyPromiseRef = useRef<Promise<SpotifyEmbedController> | null>(null)
+  const awaitingStartRef = useRef(false)
   const [connecting, setConnecting] = useState(false)
   const [error, setError] = useState(false)
   const isPlaying = activeTrackId === trackId
@@ -54,6 +55,12 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
               controller.addListener("ready", finish)
               controller.addListener("playback_update", (e) => {
                 finish()
+                // Spotify reports isBuffering while it's still loading the audio
+                // stream — only clear the spinner once it's actually flowing.
+                if (awaitingStartRef.current && !e.data.isBuffering) {
+                  awaitingStartRef.current = false
+                  setConnecting(false)
+                }
                 if (e.data.isPaused && e.data.position === 0 && activeTrackId === trackId) {
                   onPlay("")
                 }
@@ -69,7 +76,6 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
   }
 
   async function handleClick() {
-    console.log("[EmbedPreview] click", { trackId, isPlaying })
     if (isPlaying) {
       controllerRef.current?.pause()
       onPlay("")
@@ -77,16 +83,21 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
     }
     setConnecting(true)
     setError(false)
+    awaitingStartRef.current = true
     try {
-      console.log("[EmbedPreview] awaiting controller...")
       const controller = await ensureController()
-      console.log("[EmbedPreview] controller ready, calling play()")
       controller.play()
       onPlay(trackId)
-    } catch (err) {
-      console.error("[EmbedPreview] failed:", err)
+      // Safety net in case no buffering-false update ever arrives
+      setTimeout(() => {
+        if (awaitingStartRef.current) {
+          awaitingStartRef.current = false
+          setConnecting(false)
+        }
+      }, 8000)
+    } catch {
+      awaitingStartRef.current = false
       setError(true)
-    } finally {
       setConnecting(false)
     }
   }
