@@ -86,10 +86,10 @@ export default function TrackCard({
             style={{ background: "#242424" }}
             aria-label="More options"
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="#888888">
-              <circle cx="12" cy="5" r="1.6" />
-              <circle cx="12" cy="12" r="1.6" />
-              <circle cx="12" cy="19" r="1.6" />
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="#888888">
+              <circle cx="5" cy="12" r="2.2" />
+              <circle cx="12" cy="12" r="2.2" />
+              <circle cx="19" cy="12" r="2.2" />
             </svg>
           </button>
           {menuOpen && (
