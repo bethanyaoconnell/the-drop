@@ -2,9 +2,10 @@
 
 import { useSession } from "next-auth/react"
 import { useRouter, useParams } from "next/navigation"
-import { useEffect, useRef, useState } from "react"
+import { useEffect, useState } from "react"
 import { getTemplate } from "@/lib/templates"
 import { SpotifyTrack, formatDuration } from "@/lib/spotify"
+import { useActiveSection } from "@/lib/useActiveSection"
 import ClassTimeline from "@/components/ClassTimeline"
 import SegmentPanel from "@/components/SegmentPanel"
 import SavePlaylistModal from "@/components/SavePlaylistModal"
@@ -19,11 +20,13 @@ export default function ClassBuilderPage() {
 
   // Map of segmentId → added tracks
   const [classTracks, setClassTracks] = useState<Record<string, SpotifyTrack[]>>({})
-  const [activeSegmentId, setActiveSegmentId] = useState<string>("")
   const [activePreviewId, setActivePreviewId] = useState<string | null>(null)
   const [showSaveModal, setShowSaveModal] = useState(false)
   const [topArtists, setTopArtists] = useState<{ id: string; name: string }[]>([])
   const [topTracks, setTopTracks] = useState<SpotifyTrack[]>([])
+
+  const segmentIds = template?.segments.map((s) => s.id) ?? []
+  const { activeId: activeSegmentId, setRef, scrollTo } = useActiveSection(segmentIds)
 
   useEffect(() => {
     fetch("/api/top-artists")
@@ -37,18 +40,9 @@ export default function ClassBuilderPage() {
       .catch(() => setTopTracks([]))
   }, [])
 
-  // Refs for scrolling to segment panels
-  const segmentRefs = useRef<Record<string, HTMLDivElement | null>>({})
-
   useEffect(() => {
     if (status === "unauthenticated") router.push("/")
   }, [status, router])
-
-  useEffect(() => {
-    if (template) {
-      setActiveSegmentId(template.segments[0].id)
-    }
-  }, [template])
 
   if (status === "loading") return <LoadingScreen />
   if (!template) {
@@ -62,11 +56,6 @@ export default function ClassBuilderPage() {
         </div>
       </div>
     )
-  }
-
-  function handleSegmentClick(segmentId: string) {
-    setActiveSegmentId(segmentId)
-    segmentRefs.current[segmentId]?.scrollIntoView({ behavior: "smooth", block: "start" })
   }
 
   function handleAddTrack(segmentId: string, track: SpotifyTrack) {
@@ -99,38 +88,68 @@ export default function ClassBuilderPage() {
     tracks: classTracks[seg.id] ?? [],
   }))
 
+  const activeSegment = template.segments.find((s) => s.id === activeSegmentId)
+  const activeUsedMs = (classTracks[activeSegmentId] ?? []).reduce((s, t) => s + t.durationMs, 0)
+  const activeRemainingMin = activeSegment ? activeSegment.durationMin - activeUsedMs / 60000 : 0
+
   return (
     <main className="min-h-screen pb-32" style={{ background: "#0A0A0A" }}>
-      {/* Top nav */}
+      {/* Top nav + active section indicator, stacked in one sticky container */}
       <div
-        className="sticky top-0 z-10 pl-4 pr-16 py-3 flex items-center gap-4"
+        className="sticky top-0 z-10"
         style={{ background: "rgba(10,10,10,0.9)", backdropFilter: "blur(12px)", borderBottom: "1px solid #1A1A1A" }}
       >
-        <button
-          onClick={() => router.push("/classes/new")}
-          className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
-          style={{ background: "#1A1A1A" }}
-        >
-          <svg width="14" height="14" viewBox="0 0 24 24" fill="#888888">
-            <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
-          </svg>
-        </button>
-        <div className="flex-1 min-w-0">
-          <h1 className="text-base font-bold text-white truncate">{template.name}</h1>
-          <p className="text-xs" style={{ color: "#888888" }}>
-            {totalTracks > 0
-              ? `${totalTracks} tracks · ${formatDuration(totalDurationMs)}`
-              : "No tracks yet"}
-          </p>
-        </div>
-        {totalTracks > 0 && (
+        <div className="flex items-center gap-4 pl-4 pr-16 py-3">
           <button
-            onClick={() => setShowSaveModal(true)}
-            className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
-            style={{ background: "#FF6B00" }}
+            onClick={() => router.push("/classes/new")}
+            className="w-8 h-8 rounded-full flex items-center justify-center shrink-0"
+            style={{ background: "#1A1A1A" }}
           >
-            Save
+            <svg width="14" height="14" viewBox="0 0 24 24" fill="#888888">
+              <path d="M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z" />
+            </svg>
           </button>
+          <div className="flex-1 min-w-0">
+            <h1 className="text-base font-bold text-white truncate">{template.name}</h1>
+            <p className="text-xs" style={{ color: "#888888" }}>
+              {totalTracks > 0
+                ? `${totalTracks} tracks · ${formatDuration(totalDurationMs)}`
+                : "No tracks yet"}
+            </p>
+          </div>
+          {totalTracks > 0 && (
+            <button
+              onClick={() => setShowSaveModal(true)}
+              className="flex items-center gap-2 px-4 py-2 rounded-full text-sm font-semibold text-white transition-opacity hover:opacity-90"
+              style={{ background: "#FF6B00" }}
+            >
+              Save
+            </button>
+          )}
+        </div>
+
+        {/* Condensed active-section indicator */}
+        {activeSegment && (
+          <div
+            className="flex items-center justify-between gap-3 pl-4 pr-16 py-1.5"
+            style={{ borderTop: "1px solid #1A1A1A" }}
+          >
+            <div className="flex items-center gap-2 min-w-0">
+              <span className="w-1.5 h-1.5 rounded-full shrink-0" style={{ background: activeSegment.color }} />
+              <span className="text-xs font-semibold text-white truncate">{activeSegment.name}</span>
+              <span className="text-xs shrink-0" style={{ color: "#555555" }}>
+                {activeSegment.durationMin}m target
+              </span>
+            </div>
+            <span
+              className="text-xs shrink-0 tabular-nums"
+              style={{ color: activeRemainingMin < 0 ? "#ff9f43" : "#666666" }}
+            >
+              {activeRemainingMin >= 0
+                ? `${activeRemainingMin.toFixed(1)}m left`
+                : `${Math.abs(activeRemainingMin).toFixed(1)}m over`}
+            </span>
+          </div>
         )}
       </div>
 
@@ -140,15 +159,16 @@ export default function ClassBuilderPage() {
           template={template}
           activeSegmentId={activeSegmentId}
           trackCounts={trackCounts}
-          onSegmentClick={handleSegmentClick}
+          onSegmentClick={scrollTo}
         />
 
         {/* Segment panels */}
         {template.segments.map((seg, i) => (
           <div
             key={seg.id}
-            ref={(el) => { segmentRefs.current[seg.id] = el }}
-            onClick={() => setActiveSegmentId(seg.id)}
+            ref={setRef(seg.id)}
+            data-section-id={seg.id}
+            onClick={() => scrollTo(seg.id)}
           >
             <SegmentPanel
               segment={seg}
