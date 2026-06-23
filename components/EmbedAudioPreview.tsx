@@ -69,6 +69,7 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
   }
 
   async function handleClick() {
+    console.log("[EmbedPreview] click", { trackId, isPlaying })
     if (isPlaying) {
       controllerRef.current?.pause()
       onPlay("")
@@ -77,10 +78,13 @@ export default function EmbedAudioPreview({ trackId, activeTrackId, onPlay }: Pr
     setConnecting(true)
     setError(false)
     try {
+      console.log("[EmbedPreview] awaiting controller...")
       const controller = await ensureController()
+      console.log("[EmbedPreview] controller ready, calling play()")
       controller.play()
       onPlay(trackId)
-    } catch {
+    } catch (err) {
+      console.error("[EmbedPreview] failed:", err)
       setError(true)
     } finally {
       setConnecting(false)
